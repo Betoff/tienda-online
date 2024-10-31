@@ -308,7 +308,7 @@ function updateStock(productId) {
 
 async function loadInitialData() {
     try {
-        const response = await fetch('https://tienda-online-admin-1.onrender.com/get_products'); // Cambiado
+        const response = await fetch('https://tienda-online-admin-1.onrender.com/get_products');
         if (!response.ok) {
             const errorMessage = await response.text();
             console.error('Error al cargar los productos:', errorMessage);
