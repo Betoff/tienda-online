@@ -308,7 +308,7 @@ function updateStock(productId) {
 
 async function loadInitialData() {
     try {
-        const response = await fetch('http://127.0.0.1:5000/get_products');
+        const response = await fetch('https://tienda-online-admin-1.onrender.com/get_products'); // Cambiado
         if (!response.ok) {
             const errorMessage = await response.text();
             console.error('Error al cargar los productos:', errorMessage);
@@ -320,7 +320,6 @@ async function loadInitialData() {
         
         // Procesar los productos y sus tallas
         products = rawProducts.map(product => {
-            // Procesar el string de tallas a un array de objetos
             const sizesArray = product.sizes ? product.sizes.split(',').map(sizeStr => {
                 const [size, stock] = sizeStr.split(':');
                 return {
@@ -340,21 +339,18 @@ async function loadInitialData() {
             };
         });
 
-        // Limpiar los contenedores antes de mostrar los productos
         document.getElementById('best-sellers').innerHTML = '';
         document.getElementById('products-container').innerHTML = '';
-
-        // Mostrar los productos
+        
         displayBestSellers();
         displayProducts(0, productsPerLoad, 'products-container', products);
         
-        console.log('Productos cargados:', products); // Para debugging
+        console.log('Productos cargados:', products);
     } catch (error) {
         console.error('Error al cargar los productos:', error);
         alert('Ocurrió un error al cargar los productos. Por favor, inténtalo de nuevo más tarde.');
     }
 }
-
     // Función para manejar errores de carga de imágenes
 function handleImageError(img) {
     img.onerror = null;
