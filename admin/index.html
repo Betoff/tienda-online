@@ -121,273 +121,209 @@
 
 
 
-<!-- Scripts de Firebase y código para cargar productos -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-<script>
-// Configuración de Firebase (usa tus credenciales)
-const firebaseConfig = {
-    apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
-    authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
-    projectId: "base-de-datos-pagina-f9038",
-    storageBucket: "base-de-datos-pagina-f9038.appspot.com",
-    messagingSenderId: "455220883391",
-    appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
-};
-
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// Función para cargar productos
-async function cargarProductos() {
-    const productContainer = document.getElementById('productContainer');
-    productContainer.innerHTML = '<div class="text-center">Cargando productos...</div>';
-
-    try {
-        const querySnapshot = await db.collection('productos').get();
-        productContainer.innerHTML = ''; // Limpiar contenedor
-
-        querySnapshot.forEach((doc) => {
-            const producto = doc.data();
-            const productoDiv = document.createElement('div');
-            productoDiv.className = 'col-md-3 mb-4';
-            productoDiv.innerHTML = `
-                <div class="card product-card">
-                    <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}">
-                    <div class="card-body text-center">
-                        <h5 class="card-title font-weight-bold">${producto.nombre}</h5>
-                        <p class="card-text">$${producto.precio}</p>
-                        <p class="card-text">Stock: ${producto.stock}</p>
-                    </div>
-                </div>
-            `;
-            productContainer.appendChild(productoDiv);
-        });
-    } catch (error) {
-        console.error('Error al cargar productos:', error);
-        productContainer.innerHTML = `<div class="alert alert-danger">Error al cargar productos: ${error.message}</div>`;
-    }
-}
-
-// Llamar a la función al cargar la página
-document.addEventListener('DOMContentLoaded', cargarProductos);
-</script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <script>
-// Configuración de Firebase (Mantén tus credenciales actuales)
-const firebaseConfig = {
-    apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
-    authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
-    projectId: "base-de-datos-pagina-f9038",
-    storageBucket: "base-de-datos-pagina-f9038.appspot.com",
-    messagingSenderId: "455220883391",
-    appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
-};
+    // Solo una configuración de Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+        authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+        projectId: "base-de-datos-pagina-f9038",
+        storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+        messagingSenderId: "455220883391",
+        appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
+    };
 
-// Inicialización de Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const storage = firebase.storage();
+    // Inicializar Firebase una sola vez
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
 
-// Elementos del DOM
-const loginScreen = document.getElementById('loginScreen');
-const adminDashboard = document.getElementById('adminDashboard');
-const loginForm = document.getElementById('loginForm');
-const loginError = document.getElementById('loginError');
-const logoutBtn = document.getElementById('logoutBtn');
-const productForm = document.getElementById('productForm');
-const productList = document.getElementById('productList');
+    // Elementos del DOM
+    const loginScreen = document.getElementById('loginScreen');
+    const adminDashboard = document.getElementById('adminDashboard');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const productForm = document.getElementById('productForm');
+    const productList = document.getElementById('productList');
 
-// Verificar sesión al cargar la página
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("Verificando sesión...");
-    const isLoggedIn = localStorage.getItem('isLoggedIn');
-    if (isLoggedIn === 'true') {
-        console.log("Sesión activa encontrada");
-        showDashboard();
-    } else {
-        console.log("No hay sesión activa");
-        showLogin();
-    }
-});
-
-// Función para mostrar la pantalla de login
-function showLogin() {
-    loginScreen.style.display = 'block';
-    adminDashboard.style.display = 'none';
-    loginError.style.display = 'none';
-}
-
-// Función para mostrar el dashboard
-function showDashboard() {
-    loginScreen.style.display = 'none';
-    adminDashboard.style.display = 'block';
-    loginError.style.display = 'none';
-    cargarProductos();
-}
-
-// Manejo del formulario de login
-loginForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    console.log("Intento de inicio de sesión");
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    if (username === 'admin' && password === 'martin07') {
-        console.log("Credenciales correctas");
-        localStorage.setItem('isLoggedIn', 'true');
-        showDashboard();
-    } else {
-        console.log("Credenciales incorrectas");
-        loginError.style.display = 'block';
-        loginForm.reset();
-    }
-});
-
-// Manejo del logout
-logoutBtn.addEventListener('click', function() {
-    console.log("Cerrando sesión");
-    localStorage.removeItem('isLoggedIn');
-    showLogin();
-    loginForm.reset();
-    productList.innerHTML = '';
-});
-
-// Manejo del formulario de productos
-productForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    try {
-        const submitButton = e.target.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
-        submitButton.textContent = 'Guardando...';
-
-        const name = document.getElementById('productName').value;
-        const price = document.getElementById('productPrice').value;
-        const size = document.getElementById('productSize').value;
-        const category = document.getElementById('productCategory').value;
-        const imageFile = document.getElementById('productImage').files[0];
-
-        // Subir imagen
-        const storageRef = storage.ref(`productos/${Date.now()}_${imageFile.name}`);
-        console.log('Subiendo imagen...');
-        const snapshot = await storageRef.put(imageFile);
-        console.log('Imagen subida exitosamente');
-        
-        const imageUrl = await snapshot.ref.getDownloadURL();
-        console.log('URL de imagen obtenida:', imageUrl);
-
-        // Guardar en Firestore
-        const producto = {
-            nombre: name,
-            precio: parseFloat(price),
-            talle: size,
-            categoria: category,
-            imagen: imageUrl,
-            fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        const docRef = await db.collection('productos').add(producto);
-        console.log('Producto guardado exitosamente con ID:', docRef.id);
-        alert('Producto guardado exitosamente');
-        
-        cargarProductos();
-        productForm.reset();
-
-    } catch (error) {
-        console.error('Error detallado:', error);
-        alert(`Error: ${error.message}\nCódigo: ${error.code}`);
-    } finally {
-        const submitButton = productForm.querySelector('button[type="submit"]');
-        submitButton.disabled = false;
-        submitButton.textContent = 'Guardar Producto';
-    }
-});
-
-// Función para cargar productos
-async function cargarProductos() {
-    try {
-        console.log("Cargando productos...");
-        productList.innerHTML = '<div class="text-center">Cargando productos...</div>';
-        
-        const querySnapshot = await db.collection('productos').orderBy('fechaCreacion', 'desc').get();
-        
-        if (querySnapshot.empty) {
-            productList.innerHTML = '<div class="text-center">No hay productos</div>';
-            return;
+    // Verificar sesión al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        if (isLoggedIn === 'true') {
+            showDashboard();
+        } else {
+            showLogin();
         }
+    });
 
+    // Función para mostrar la pantalla de login
+    function showLogin() {
+        loginScreen.style.display = 'block';
+        adminDashboard.style.display = 'none';
+    }
+
+    // Función para mostrar el dashboard
+    function showDashboard() {
+        loginScreen.style.display = 'none';
+        adminDashboard.style.display = 'block';
+        cargarProductos();
+    }
+
+    // Manejo del formulario de login
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        if (username === 'admin' && password === 'martin07') {
+            localStorage.setItem('isLoggedIn', 'true');
+            showDashboard();
+        } else {
+            loginError.style.display = 'block';
+            loginForm.reset();
+        }
+    });
+
+    // Manejo del logout
+    logoutBtn.addEventListener('click', function() {
+        localStorage.removeItem('isLoggedIn');
+        showLogin();
+        loginForm.reset();
         productList.innerHTML = '';
-        querySnapshot.forEach((doc) => {
-            const producto = doc.data();
-            const productoDiv = document.createElement('div');
-            productoDiv.className = 'col-md-4 mb-4';
-            productoDiv.innerHTML = `
-                <div class="card product-card">
-                    <img src="${producto.imagen}" class="card-img-top product-image" alt="${producto.nombre}" onerror="this.src='placeholder.jpg'">
-                    <div class="card-body">
-                        <h5 class="card-title">${producto.nombre}</h5>
-                        <p class="card-text">
-                            Precio: $${producto.precio}<br>
-                            Talle: ${producto.talle}<br>
-                            Categoría: ${producto.categoria}
-                        </p>
-                        <div class="d-flex justify-content-between">
-                            <button onclick="editarProducto('${doc.id}')" class="btn btn-warning btn-sm">Editar</button>
-                            <button onclick="eliminarProducto('${doc.id}')" class="btn btn-danger btn-sm">Eliminar</button>
+    });
+
+    // Manejo del formulario de productos
+    productForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Guardando...';
+
+            const name = document.getElementById('productName').value;
+            const price = document.getElementById('productPrice').value;
+            const size = document.getElementById('productSize').value;
+            const category = document.getElementById('productCategory').value;
+            const imageFile = document.getElementById('productImage').files[0];
+
+            // Subir imagen
+            const storageRef = storage.ref(`productos/${Date.now()}_${imageFile.name}`);
+            const snapshot = await storageRef.put(imageFile);
+            const imageUrl = await snapshot.ref.getDownloadURL();
+
+            // Guardar en Firestore
+            const producto = {
+                nombre: name,
+                precio: parseFloat(price),
+                talle: size,
+                categoria: category,
+                imagen: imageUrl,
+                fechaCreacion: firebase.firestore.FieldValue.serverTimestamp(),
+                stock: 10 // Agregamos un stock por defecto
+            };
+
+            await db.collection('productos').add(producto);
+            alert('Producto guardado exitosamente');
+            
+            cargarProductos();
+            productForm.reset();
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`Error: ${error.message}`);
+        } finally {
+            const submitButton = productForm.querySelector('button[type="submit"]');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Guardar Producto';
+        }
+    });
+
+    // Función para cargar productos
+    async function cargarProductos() {
+        try {
+            productList.innerHTML = '<div class="text-center">Cargando productos...</div>';
+            
+            const querySnapshot = await db.collection('productos').orderBy('fechaCreacion', 'desc').get();
+            
+            if (querySnapshot.empty) {
+                productList.innerHTML = '<div class="text-center">No hay productos</div>';
+                return;
+            }
+
+            productList.innerHTML = '';
+            querySnapshot.forEach((doc) => {
+                const producto = doc.data();
+                const productoDiv = document.createElement('div');
+                productoDiv.className = 'col-md-4 mb-4';
+                productoDiv.innerHTML = `
+                    <div class="card product-card">
+                        <img src="${producto.imagen}" class="card-img-top product-image" alt="${producto.nombre}" onerror="this.src='placeholder.jpg'">
+                        <div class="card-body">
+                            <h5 class="card-title">${producto.nombre}</h5>
+                            <p class="card-text">
+                                Precio: $${producto.precio}<br>
+                                Talle: ${producto.talle}<br>
+                                Categoría: ${producto.categoria}
+                            </p>
+                            <div class="d-flex justify-content-between">
+                                <button onclick="editarProducto('${doc.id}')" class="btn btn-warning btn-sm">Editar</button>
+                                <button onclick="eliminarProducto('${doc.id}')" class="btn btn-danger btn-sm">Eliminar</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
-            productList.appendChild(productoDiv);
-        });
-    } catch (error) {
-        console.error('Error al cargar productos:', error);
-        productList.innerHTML = `<div class="alert alert-danger">Error al cargar productos: ${error.message}</div>`;
-    }
-}
-
-// Función para editar producto
-async function editarProducto(id) {
-    try {
-        const doc = await db.collection('productos').doc(id).get();
-        const producto = doc.data();
-
-        const nuevoNombre = prompt('Editar nombre del producto', producto.nombre);
-        const nuevoPrecio = prompt('Editar precio', producto.precio);
-        const nuevoTalle = prompt('Editar talle', producto.talle);
-        const nuevaCategoria = prompt('Editar categoría', producto.categoria);
-
-        if (nuevoNombre) {
-            await db.collection('productos').doc(id).update({
-                nombre: nuevoNombre,
-                precio: parseFloat(nuevoPrecio),
-                talle: nuevoTalle,
-                categoria: nuevaCategoria
+                `;
+                productList.appendChild(productoDiv);
             });
-            cargarProductos();
-        }
-    } catch (error) {
-        console.error('Error al editar: ', error);
-        alert('Error al editar producto: ' + error.message);
-    }
-}
-
-// Función para eliminar producto
-async function eliminarProducto(id) {
-    if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-        try {
-            await db.collection('productos').doc(id).delete();
-            cargarProductos();
         } catch (error) {
-            console.error('Error al eliminar: ', error);
-            alert('Error al eliminar producto: ' + error.message);
+            console.error('Error al cargar productos:', error);
+            productList.innerHTML = `<div class="alert alert-danger">Error al cargar productos: ${error.message}</div>`;
         }
     }
-}
+
+    // Función para editar producto
+    async function editarProducto(id) {
+        try {
+            const doc = await db.collection('productos').doc(id).get();
+            const producto = doc.data();
+
+            const nuevoNombre = prompt('Editar nombre del producto', producto.nombre);
+            const nuevoPrecio = prompt('Editar precio', producto.precio);
+            const nuevoTalle = prompt('Editar talle', producto.talle);
+            const nuevaCategoria = prompt('Editar categoría', producto.categoria);
+
+            if (nuevoNombre) {
+                await db.collection('productos').doc(id).update({
+                    nombre: nuevoNombre,
+                    precio: parseFloat(nuevoPrecio),
+                    talle: nuevoTalle,
+                    categoria: nuevaCategoria
+                });
+                cargarProductos();
+            }
+        } catch (error) {
+            console.error('Error al editar:', error);
+            alert('Error al editar producto: ' + error.message);
+        }
+    }
+
+    // Función para eliminar producto
+    async function eliminarProducto(id) {
+        if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+            try {
+                await db.collection('productos').doc(id).delete();
+                cargarProductos();
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                alert('Error al eliminar producto: ' + error.message);
+            }
+        }
+    }
     </script>
 </body>
 </html>
