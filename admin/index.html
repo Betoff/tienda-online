@@ -152,36 +152,59 @@ db.collection('productos').get()
             productList.innerHTML = `<div class="alert alert-danger">Error de conexión a la base de datos: ${error.message}</div>`;
         }
     });
-        // Elementos del DOM
-        const loginScreen = document.getElementById('loginScreen');
-        const adminDashboard = document.getElementById('adminDashboard');
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const productForm = document.getElementById('productForm');
-        const productList = document.getElementById('productList');
+// Sistema de autenticación
+const loginForm = document.getElementById('loginForm');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
 
-        // Validación de Login
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+// Verificar si ya hay una sesión activa al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    if (isLoggedIn === 'true') {
+        showDashboard();
+    }
+});
 
-            if (username === 'admin' && password === 'martin07') {
-                loginScreen.style.display = 'none';
-                adminDashboard.style.display = 'block';
-                cargarProductos();
-            } else {
-                loginError.style.display = 'block';
-            }
-        });
+// Manejo del login
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault(); // Previene la recarga de la página
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            loginScreen.style.display = 'block';
-            adminDashboard.style.display = 'none';
-            loginForm.reset();
-        });
+    if (username === 'admin' && password === 'martin07') {
+        // Guardar el estado de la sesión
+        sessionStorage.setItem('isLoggedIn', 'true');
+        showDashboard();
+    } else {
+        loginError.style.display = 'block';
+        loginForm.reset();
+    }
+});
+
+// Función para mostrar el dashboard
+function showDashboard() {
+    loginScreen.style.display = 'none';
+    adminDashboard.style.display = 'block';
+    loginError.style.display = 'none';
+    loginForm.reset();
+    cargarProductos(); // Cargar los productos al mostrar el dashboard
+}
+
+// Manejo del logout
+logoutBtn.addEventListener('click', () => {
+    // Limpiar la sesión
+    sessionStorage.removeItem('isLoggedIn');
+    
+    // Mostrar pantalla de login
+    loginScreen.style.display = 'block';
+    adminDashboard.style.display = 'none';
+    loginError.style.display = 'none';
+    loginForm.reset();
+    
+    // Limpiar la lista de productos
+    productList.innerHTML = '';
+});
 
 // Función para guardar producto
 productForm.addEventListener('submit', async (e) => {
