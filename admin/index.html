@@ -123,95 +123,91 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <script>
-        // Configuración de Firebase (Reemplazar con tus propias credenciales)
-        const firebaseConfig = {
-  apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
-  authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
-  projectId: "base-de-datos-pagina-f9038",
-  storageBucket: "base-de-datos-pagina-f9038.appspot.com",
-  messagingSenderId: "455220883391",
-  appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
-        };
+// Configuración de Firebase (Mantén tus credenciales actuales)
+const firebaseConfig = {
+    apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+    authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+    projectId: "base-de-datos-pagina-f9038",
+    storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+    messagingSenderId: "455220883391",
+    appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
+};
 
-       // Inicialización de Firebase con verificación
+// Inicialización de Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// Verificar conexión inmediatamente
-db.collection('productos').get()
-    .then(() => {
-        console.log('Conexión a Firestore exitosa');
-        if (adminDashboard.style.display === 'block') {
-            cargarProductos();
-        }
-    })
-    .catch(error => {
-        console.error('Error de conexión a Firestore:', error);
-        if (adminDashboard.style.display === 'block') {
-            productList.innerHTML = `<div class="alert alert-danger">Error de conexión a la base de datos: ${error.message}</div>`;
-        }
-    });
-// Sistema de autenticación
+// Elementos del DOM
+const loginScreen = document.getElementById('loginScreen');
+const adminDashboard = document.getElementById('adminDashboard');
 const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
 const logoutBtn = document.getElementById('logoutBtn');
+const productForm = document.getElementById('productForm');
+const productList = document.getElementById('productList');
 
-// Verificar si ya hay una sesión activa al cargar la página
+// Verificar sesión al cargar la página
 document.addEventListener('DOMContentLoaded', () => {
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn');
+    console.log("Verificando sesión...");
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
     if (isLoggedIn === 'true') {
-        showDashboard();
-    }
-});
-
-// Manejo del login
-loginForm.addEventListener('submit', (e) => {
-    e.preventDefault(); // Previene la recarga de la página
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    if (username === 'admin' && password === 'martin07') {
-        // Guardar el estado de la sesión
-        sessionStorage.setItem('isLoggedIn', 'true');
+        console.log("Sesión activa encontrada");
         showDashboard();
     } else {
-        loginError.style.display = 'block';
-        loginForm.reset();
+        console.log("No hay sesión activa");
+        showLogin();
     }
 });
+
+// Función para mostrar la pantalla de login
+function showLogin() {
+    loginScreen.style.display = 'block';
+    adminDashboard.style.display = 'none';
+    loginError.style.display = 'none';
+}
 
 // Función para mostrar el dashboard
 function showDashboard() {
     loginScreen.style.display = 'none';
     adminDashboard.style.display = 'block';
     loginError.style.display = 'none';
-    loginForm.reset();
-    cargarProductos(); // Cargar los productos al mostrar el dashboard
+    cargarProductos();
 }
 
+// Manejo del formulario de login
+loginForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    console.log("Intento de inicio de sesión");
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    if (username === 'admin' && password === 'martin07') {
+        console.log("Credenciales correctas");
+        localStorage.setItem('isLoggedIn', 'true');
+        showDashboard();
+    } else {
+        console.log("Credenciales incorrectas");
+        loginError.style.display = 'block';
+        loginForm.reset();
+    }
+});
+
 // Manejo del logout
-logoutBtn.addEventListener('click', () => {
-    // Limpiar la sesión
-    sessionStorage.removeItem('isLoggedIn');
-    
-    // Mostrar pantalla de login
-    loginScreen.style.display = 'block';
-    adminDashboard.style.display = 'none';
-    loginError.style.display = 'none';
+logoutBtn.addEventListener('click', function() {
+    console.log("Cerrando sesión");
+    localStorage.removeItem('isLoggedIn');
+    showLogin();
     loginForm.reset();
-    
-    // Limpiar la lista de productos
     productList.innerHTML = '';
 });
 
-// Función para guardar producto
-productForm.addEventListener('submit', async (e) => {
+// Manejo del formulario de productos
+productForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     try {
-        // Mostrar que está cargando
         const submitButton = e.target.querySelector('button[type="submit"]');
         submitButton.disabled = true;
         submitButton.textContent = 'Guardando...';
@@ -222,7 +218,7 @@ productForm.addEventListener('submit', async (e) => {
         const category = document.getElementById('productCategory').value;
         const imageFile = document.getElementById('productImage').files[0];
 
-        // Primero intentamos subir la imagen
+        // Subir imagen
         const storageRef = storage.ref(`productos/${Date.now()}_${imageFile.name}`);
         console.log('Subiendo imagen...');
         const snapshot = await storageRef.put(imageFile);
@@ -231,7 +227,7 @@ productForm.addEventListener('submit', async (e) => {
         const imageUrl = await snapshot.ref.getDownloadURL();
         console.log('URL de imagen obtenida:', imageUrl);
 
-        // Luego guardamos en Firestore
+        // Guardar en Firestore
         const producto = {
             nombre: name,
             precio: parseFloat(price),
@@ -241,43 +237,27 @@ productForm.addEventListener('submit', async (e) => {
             fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        console.log('Guardando producto en Firestore:', producto);
         const docRef = await db.collection('productos').add(producto);
-        
         console.log('Producto guardado exitosamente con ID:', docRef.id);
         alert('Producto guardado exitosamente');
-
-        // Función de manejo de errores
-function handleError(error, context) {
-    console.error(`Error en ${context}:`, error);
-    const errorMessage = error.code === 'permission-denied' 
-        ? 'Error de permisos. Por favor, verifica las reglas de Firestore.'
-        : `Error: ${error.message}`;
-    return errorMessage;
-}
-
-// Modifica el catch en cargarProductos para usar esta función
-catch (error) {
-    const errorMessage = handleError(error, 'cargar productos');
-    productList.innerHTML = `<div class="alert alert-danger">${errorMessage}</div>`;
-}
-        cargarProductos(); // Recargar lista
-        productForm.reset(); // Limpiar formulario
+        
+        cargarProductos();
+        productForm.reset();
 
     } catch (error) {
         console.error('Error detallado:', error);
         alert(`Error: ${error.message}\nCódigo: ${error.code}`);
     } finally {
-        // Restaurar el botón
         const submitButton = productForm.querySelector('button[type="submit"]');
         submitButton.disabled = false;
         submitButton.textContent = 'Guardar Producto';
     }
 });
 
-// Función para cargar productos con manejo de errores
+// Función para cargar productos
 async function cargarProductos() {
     try {
+        console.log("Cargando productos...");
         productList.innerHTML = '<div class="text-center">Cargando productos...</div>';
         
         const querySnapshot = await db.collection('productos').orderBy('fechaCreacion', 'desc').get();
@@ -317,33 +297,44 @@ async function cargarProductos() {
     }
 }
 
-        // Función para editar producto (mejorada)
-        async function editarProducto(id) {
-            try {
-                // Obtener producto actual
-                const doc = await db.collection('productos').doc(id).get();
-                const producto = doc.data();
+// Función para editar producto
+async function editarProducto(id) {
+    try {
+        const doc = await db.collection('productos').doc(id).get();
+        const producto = doc.data();
 
-                // Crear formulario de edición
-                const nuevoNombre = prompt('Editar nombre del producto', producto.nombre);
-                const nuevoPrecio = prompt('Editar precio', producto.precio);
-                const nuevoTalle = prompt('Editar talle', producto.talle);
-                const nuevaCategoria = prompt('Editar categoría', producto.categoria);
+        const nuevoNombre = prompt('Editar nombre del producto', producto.nombre);
+        const nuevoPrecio = prompt('Editar precio', producto.precio);
+        const nuevoTalle = prompt('Editar talle', producto.talle);
+        const nuevaCategoria = prompt('Editar categoría', producto.categoria);
 
-                if (nuevoNombre) {
-                    await db.collection('productos').doc(id).update({
-                        nombre: nuevoNombre,
-                        precio: parseFloat(nuevoPrecio),
-                        talle: nuevoTalle,
-                        categoria: nuevaCategoria
-                    });
-                    cargarProductos();
-                }
-            } catch (error) {
-                console.error('Error al editar: ', error);
-                alert('Error al editar producto: ' + error.message);
-            }
+        if (nuevoNombre) {
+            await db.collection('productos').doc(id).update({
+                nombre: nuevoNombre,
+                precio: parseFloat(nuevoPrecio),
+                talle: nuevoTalle,
+                categoria: nuevaCategoria
+            });
+            cargarProductos();
         }
+    } catch (error) {
+        console.error('Error al editar: ', error);
+        alert('Error al editar producto: ' + error.message);
+    }
+}
+
+// Función para eliminar producto
+async function eliminarProducto(id) {
+    if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+        try {
+            await db.collection('productos').doc(id).delete();
+            cargarProductos();
+        } catch (error) {
+            console.error('Error al eliminar: ', error);
+            alert('Error al eliminar producto: ' + error.message);
+        }
+    }
+}
     </script>
 </body>
 </html>
