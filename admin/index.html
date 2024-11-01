@@ -116,11 +116,64 @@
 
         <div id="productList" class="row"></div>
     </div>
+    <!-- Contenedor donde se mostrarán los productos -->
+<div id="productContainer" class="row"></div>
 
-<!-- Firebase Scripts -->
+
+
+<!-- Scripts de Firebase y código para cargar productos -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+<script>
+// Configuración de Firebase (usa tus credenciales)
+const firebaseConfig = {
+    apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+    authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+    projectId: "base-de-datos-pagina-f9038",
+    storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+    messagingSenderId: "455220883391",
+    appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Función para cargar productos
+async function cargarProductos() {
+    const productContainer = document.getElementById('productContainer');
+    productContainer.innerHTML = '<div class="text-center">Cargando productos...</div>';
+
+    try {
+        const querySnapshot = await db.collection('productos').get();
+        productContainer.innerHTML = ''; // Limpiar contenedor
+
+        querySnapshot.forEach((doc) => {
+            const producto = doc.data();
+            const productoDiv = document.createElement('div');
+            productoDiv.className = 'col-md-3 mb-4';
+            productoDiv.innerHTML = `
+                <div class="card product-card">
+                    <img src="${producto.imagen}" class="card-img-top" alt="${producto.nombre}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title font-weight-bold">${producto.nombre}</h5>
+                        <p class="card-text">$${producto.precio}</p>
+                        <p class="card-text">Stock: ${producto.stock}</p>
+                    </div>
+                </div>
+            `;
+            productContainer.appendChild(productoDiv);
+        });
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+        productContainer.innerHTML = `<div class="alert alert-danger">Error al cargar productos: ${error.message}</div>`;
+    }
+}
+
+// Llamar a la función al cargar la página
+document.addEventListener('DOMContentLoaded', cargarProductos);
+</script>
 
     <script>
 // Configuración de Firebase (Mantén tus credenciales actuales)
