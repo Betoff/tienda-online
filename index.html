@@ -117,40 +117,21 @@ function displayProducts(start, end, container, productList) {
         const productElement = document.createElement('div');
         productElement.className = 'product';
         
-        // Asegurarse de que product.sizes existe y es un array
-        const sizes = Array.isArray(product.sizes) ? product.sizes : [{ size: product.talle, stock: 10 }];
-        
-        const sizeOptions = sizes.map(size => `
-            <option value="${size.size}" ${size.stock <= 0 ? 'disabled' : ''}>
-                ${size.size} ${size.stock <= 0 ? '(Sin stock)' : `(${size.stock} disponibles)`}
-            </option>
-        `).join('');
-
         productElement.innerHTML = `
-            <img src="${product.image || product.imagen}" alt="${product.name || product.nombre}" 
+            <img src="${product.image}" alt="${product.name}" 
                  loading="lazy" onerror="handleImageError(this)">
-            <h3>${product.name || product.nombre}</h3>
-            <p>$${(product.price || product.precio).toLocaleString()}</p>
+            <h3>${product.name}</h3>
+            <p>$${product.price.toLocaleString()}</p>
             <div class="size-selector">
-                <label for="size-${product.id}">Talle:</label>
-                <select id="size-${product.id}" class="size-select">
-                    <option value="">Seleccionar talle</option>
-                    ${sizeOptions}
-                </select>
+                <label for="size-${product.id}">Talle: ${product.size}</label>
+                <p>Stock disponible: ${product.stock}</p>
             </div>
-            <button onclick="addToCart('${product.id}', document.getElementById('size-${product.id}').value)" 
-                    disabled class="add-to-cart-btn">
-                <i class="fas fa-shopping-cart"></i> Agregar
+            <button onclick="addToCart('${product.id}')" 
+                    class="add-to-cart-btn" ${product.stock <= 0 ? 'disabled' : ''}>
+                <i class="fas fa-shopping-cart"></i> 
+                ${product.stock <= 0 ? 'Sin stock' : 'Agregar al carrito'}
             </button>
         `;
-
-        const sizeSelect = productElement.querySelector('.size-select');
-        const addButton = productElement.querySelector('.add-to-cart-btn');
-        
-        sizeSelect.addEventListener('change', function() {
-            const selectedSize = this.value;
-            addButton.disabled = !selectedSize;
-        });
 
         productContainer.appendChild(productElement);
     }
@@ -183,21 +164,26 @@ async function loadInitialData() {
                 price: parseFloat(data.precio),
                 category: data.categoria,
                 image: data.imagen,
-                sizes: [{ size: data.talle, stock: 10 }],
-                sales: 0
+                size: data.talle,
+                stock: data.stock || 10
             };
         });
 
         console.log('Productos cargados:', products);
 
+        // Limpiar contenedores
         const bestSellersContainer = document.getElementById('best-sellers');
         const productsContainer = document.getElementById('products-container');
         
         if (bestSellersContainer) bestSellersContainer.innerHTML = '';
         if (productsContainer) productsContainer.innerHTML = '';
         
-        displayBestSellers();
+        // Mostrar productos
         displayProducts(0, productsPerLoad, 'products-container', products);
+        
+        // Mostrar algunos productos como "más vendidos" (temporalmente los primeros 4)
+        const bestSellers = products.slice(0, 4);
+        displayProducts(0, bestSellers.length, 'best-sellers', bestSellers);
         
     } catch (error) {
         console.error('Error al cargar los productos:', error);
