@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="format-detection" content="telephone=no">
-    <title>POSADASCHIC</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda de Clientes</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Agregar estos scripts de Firebase aquí -->
+
+    <!-- Scripts de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
@@ -51,20 +45,19 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     console.error('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo);
     return false;
 };
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+            authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+            projectId: "base-de-datos-pagina-f9038",
+            storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+            messagingSenderId: "455220883391",
+            appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a"
+        };
 
-// Configuración de Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
-    authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
-    projectId: "base-de-datos-pagina-f9038",
-    storageBucket: "base-de-datos-pagina-f9038.appspot.com",
-    messagingSenderId: "455220883391",
-    appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
-};
-
-// Inicialización de Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+        // Inicialización de Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
 let products = [];
 const cart = [];
