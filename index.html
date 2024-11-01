@@ -46,45 +46,91 @@ window.onerror = function(msg, url, lineNo, columnNo, error) {
     return false;
 };
         // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
-            authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
-            projectId: "base-de-datos-pagina-f9038",
-            storageBucket: "base-de-datos-pagina-f9038.appspot.com",
-            messagingSenderId: "455220883391",
-            appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a"
-        };
+       // Configuración de Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+    authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+    projectId: "base-de-datos-pagina-f9038",
+    storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+    messagingSenderId: "455220883391",
+    appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
+};
 
-        // Inicialización de Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+// Inicialización de Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 let products = [];
 const cart = [];
 let displayedProducts = 0;
 const productsPerLoad = 8;
 
+// Función para manejar errores de imagen
+function handleImageError(img) {
+    img.src = 'https://via.placeholder.com/300x300?text=Imagen+no+disponible';
+}
+
 function toggleCart() {
     document.getElementById('cart').classList.toggle('active');
 }
 
+function addToCart(productId, selectedSize) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    const cartItem = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        size: selectedSize,
+        quantity: 1
+    };
+
+    cart.push(cartItem);
+    updateCartDisplay();
+}
+
+function updateCartDisplay() {
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    
+    cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item">
+            <span>${item.name} - Talle: ${item.size}</span>
+            <span>$${item.price.toLocaleString()}</span>
+        </div>
+    `).join('');
+    
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    cartTotal.textContent = total.toLocaleString();
+}
+
 function displayProducts(start, end, container, productList) {
     const productContainer = document.getElementById(container);
+    if (!productContainer) {
+        console.error(`Container '${container}' not found`);
+        return;
+    }
+
     for (let i = start; i < end && i < productList.length; i++) {
         const product = productList[i];
         const productElement = document.createElement('div');
         productElement.className = 'product';
         
-        const sizeOptions = product.sizes.map(size => `
+        // Asegurarse de que product.sizes existe y es un array
+        const sizes = Array.isArray(product.sizes) ? product.sizes : [{ size: product.talle, stock: 10 }];
+        
+        const sizeOptions = sizes.map(size => `
             <option value="${size.size}" ${size.stock <= 0 ? 'disabled' : ''}>
                 ${size.size} ${size.stock <= 0 ? '(Sin stock)' : `(${size.stock} disponibles)`}
             </option>
         `).join('');
 
         productElement.innerHTML = `
-            <img src="${product.image}" alt="${product.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Imagen+no+disponible'">
-            <h3>${product.name}</h3>
-            <p>$${product.price.toLocaleString()}</p>
+            <img src="${product.image || product.imagen}" alt="${product.name || product.nombre}" 
+                 loading="lazy" onerror="handleImageError(this)">
+            <h3>${product.name || product.nombre}</h3>
+            <p>$${(product.price || product.precio).toLocaleString()}</p>
             <div class="size-selector">
                 <label for="size-${product.id}">Talle:</label>
                 <select id="size-${product.id}" class="size-select">
@@ -92,7 +138,8 @@ function displayProducts(start, end, container, productList) {
                     ${sizeOptions}
                 </select>
             </div>
-            <button onclick="addToCart(${product.id})" disabled class="add-to-cart-btn">
+            <button onclick="addToCart('${product.id}', document.getElementById('size-${product.id}').value)" 
+                    disabled class="add-to-cart-btn">
                 <i class="fas fa-shopping-cart"></i> Agregar
             </button>
         `;
@@ -102,8 +149,7 @@ function displayProducts(start, end, container, productList) {
         
         sizeSelect.addEventListener('change', function() {
             const selectedSize = this.value;
-            const size = product.sizes.find(s => s.size === selectedSize);
-            addButton.disabled = !selectedSize || (size && size.stock <= 0);
+            addButton.disabled = !selectedSize;
         });
 
         productContainer.appendChild(productElement);
@@ -111,28 +157,14 @@ function displayProducts(start, end, container, productList) {
     
     if (container === 'products-container') {
         displayedProducts = end;
-        document.getElementById('load-more').style.display = 
-            displayedProducts >= productList.length ? 'none' : 'block';
+        const loadMoreButton = document.getElementById('load-more');
+        if (loadMoreButton) {
+            loadMoreButton.style.display = 
+                displayedProducts >= productList.length ? 'none' : 'block';
+        }
     }
 }
 
-function displayBestSellers() {
-    const bestSellers = [...products]
-        .sort((a, b) => b.sales - a.sales)
-        .slice(0, 4);
-    displayProducts(0, bestSellers.length, 'best-sellers', bestSellers);
-}
-
-function loadMore() {
-    displayProducts(
-        displayedProducts, 
-        displayedProducts + productsPerLoad, 
-        'products-container', 
-        products
-    );
-}
-
-// Nueva función para cargar datos desde Firebase
 async function loadInitialData() {
     try {
         console.log('Cargando productos desde Firebase...');
@@ -143,7 +175,6 @@ async function loadInitialData() {
             return;
         }
 
-        // Convertir los documentos de Firebase a nuestro formato de productos
         products = snapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -152,33 +183,47 @@ async function loadInitialData() {
                 price: parseFloat(data.precio),
                 category: data.categoria,
                 image: data.imagen,
-                sizes: [{ size: data.talle, stock: 10 }], // Asumimos un stock inicial de 10
+                sizes: [{ size: data.talle, stock: 10 }],
                 sales: 0
             };
         });
 
-        document.getElementById('best-sellers').innerHTML = '';
-        document.getElementById('products-container').innerHTML = '';
+        console.log('Productos cargados:', products);
+
+        const bestSellersContainer = document.getElementById('best-sellers');
+        const productsContainer = document.getElementById('products-container');
+        
+        if (bestSellersContainer) bestSellersContainer.innerHTML = '';
+        if (productsContainer) productsContainer.innerHTML = '';
         
         displayBestSellers();
         displayProducts(0, productsPerLoad, 'products-container', products);
         
-        console.log('Productos cargados:', products);
     } catch (error) {
         console.error('Error al cargar los productos:', error);
         alert('Ocurrió un error al cargar los productos. Por favor, inténtalo de nuevo más tarde.');
     }
 }
 
+function displayBestSellers() {
+    if (products.length === 0) return;
+    
+    const bestSellers = [...products]
+        .sort((a, b) => (b.sales || 0) - (a.sales || 0))
+        .slice(0, 4);
+    displayProducts(0, bestSellers.length, 'best-sellers', bestSellers);
+}
+
 function filterByCategory(category) {
     const productContainer = document.getElementById('products-container');
+    if (!productContainer) return;
+    
     productContainer.innerHTML = '';
     displayedProducts = 0;
     
-    let filteredProducts = products;
-    if (category !== 'all') {
-        filteredProducts = products.filter(p => p.category.toLowerCase() === category.toLowerCase());
-    }
+    let filteredProducts = category === 'all' ? 
+        products : 
+        products.filter(p => (p.category || p.categoria).toLowerCase() === category.toLowerCase());
     
     displayProducts(0, productsPerLoad, 'products-container', filteredProducts);
 }
@@ -186,16 +231,27 @@ function filterByCategory(category) {
 function searchProducts() {
     const searchTerm = document.getElementById('search-bar').value.toLowerCase();
     const productContainer = document.getElementById('products-container');
+    if (!productContainer) return;
+    
     productContainer.innerHTML = '';
     displayedProducts = 0;
     
     const filteredProducts = products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm) ||
-        product.category.toLowerCase().includes(searchTerm)
+        (product.name || product.nombre).toLowerCase().includes(searchTerm) ||
+        (product.category || product.categoria).toLowerCase().includes(searchTerm)
     );
     
     displayProducts(0, productsPerLoad, 'products-container', filteredProducts);
-}}
+}
+
+function loadMore() {
+    displayProducts(
+        displayedProducts, 
+        displayedProducts + productsPerLoad, 
+        'products-container', 
+        products
+    );
+}
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
