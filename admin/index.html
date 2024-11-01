@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://*.googleapis.com cdn.jsdelivr.net; img-src 'self' blob: data: https://*.googleapis.com https://*.gstatic.com https://*.firebase.com https://*.firebaseio.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;">
     <title>Gestor de Productos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -131,10 +133,25 @@
   appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+       // Inicialización de Firebase con verificación
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
 
+// Verificar conexión inmediatamente
+db.collection('productos').get()
+    .then(() => {
+        console.log('Conexión a Firestore exitosa');
+        if (adminDashboard.style.display === 'block') {
+            cargarProductos();
+        }
+    })
+    .catch(error => {
+        console.error('Error de conexión a Firestore:', error);
+        if (adminDashboard.style.display === 'block') {
+            productList.innerHTML = `<div class="alert alert-danger">Error de conexión a la base de datos: ${error.message}</div>`;
+        }
+    });
         // Elementos del DOM
         const loginScreen = document.getElementById('loginScreen');
         const adminDashboard = document.getElementById('adminDashboard');
@@ -206,7 +223,21 @@ productForm.addEventListener('submit', async (e) => {
         
         console.log('Producto guardado exitosamente con ID:', docRef.id);
         alert('Producto guardado exitosamente');
-        
+
+        // Función de manejo de errores
+function handleError(error, context) {
+    console.error(`Error en ${context}:`, error);
+    const errorMessage = error.code === 'permission-denied' 
+        ? 'Error de permisos. Por favor, verifica las reglas de Firestore.'
+        : `Error: ${error.message}`;
+    return errorMessage;
+}
+
+// Modifica el catch en cargarProductos para usar esta función
+catch (error) {
+    const errorMessage = handleError(error, 'cargar productos');
+    productList.innerHTML = `<div class="alert alert-danger">${errorMessage}</div>`;
+}
         cargarProductos(); // Recargar lista
         productForm.reset(); // Limpiar formulario
 
