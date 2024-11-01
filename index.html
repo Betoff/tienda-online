@@ -1,9 +1,12 @@
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tienda de Clientes</title>
     <link rel="stylesheet" href="style.css">
-
+    <!-- Font Awesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Scripts de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -15,28 +18,31 @@
     </header>
     <nav>
         <ul>
-            <li><a href="#" onclick="filterByCategory('all')">Todo</a></li>
-            <li><a href="#" onclick="filterByCategory('Pantalones')">Pantalones</a></li>
-            <li><a href="#" onclick="filterByCategory('Remeras')">Remeras</a></li>
-            <li><a href="#" onclick="filterByCategory('Buzos')">Buzos</a></li>
+            <li><a href="#" class="category-filter" data-category="all">Todo</a></li>
+            <li><a href="#" class="category-filter" data-category="Pantalones">Pantalones</a></li>
+            <li><a href="#" class="category-filter" data-category="Remeras">Remeras</a></li>
+            <li><a href="#" class="category-filter" data-category="Buzos">Buzos</a></li>
         </ul>
     </nav>
     <div class="container">
-        <input type="text" id="search-bar" placeholder="Buscar productos..." oninput="searchProducts()">
+        <input type="text" id="search-bar" placeholder="Buscar productos...">
         <h2 class="section-title">Más vendidos</h2>
         <div id="best-sellers" class="product-grid"></div>
         <h2 class="section-title">Catálogo completo</h2>
         <div id="products-container" class="product-grid"></div>
-        <button id="load-more" onclick="loadMore()">Ver más</button>
+        <button id="load-more" class="load-more-btn">Ver más</button>
     </div>
-    <button id="cart-toggle" onclick="toggleCart()">
+    <button id="cart-toggle" class="cart-toggle">
         <i class="fas fa-shopping-cart"></i>
     </button>
-    <div id="cart">
+    <div id="cart" class="cart">
         <h3>Tu carrito</h3>
         <div id="cart-items"></div>
         <p>Total: $<span id="cart-total">0</span></p>
-        <button onclick="checkout()" style="width: 100%; margin-top: 1rem;">Finalizar compra</button>
+        <button id="checkout-btn" class="checkout-btn">Finalizar compra</button>
     </div>
 
-    
+    <!-- Cargar el script al final del body -->
+    <script src="script.js"></script>
+</body>
+</html>
