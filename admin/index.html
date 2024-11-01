@@ -166,81 +166,102 @@
             loginForm.reset();
         });
 
-        // Función para guardar producto
-        productForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('productName').value;
-            const price = document.getElementById('productPrice').value;
-            const size = document.getElementById('productSize').value;
-            const category = document.getElementById('productCategory').value;
-            const imageFile = document.getElementById('productImage').files[0];
+// Función para guardar producto
+productForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    try {
+        // Mostrar que está cargando
+        const submitButton = e.target.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Guardando...';
 
-            try {
-                // Subir imagen a Firebase Storage
-                const storageRef = storage.ref(`productos/${Date.now()}_${imageFile.name}`);
-                const snapshot = await storageRef.put(imageFile);
-                const imageUrl = await snapshot.ref.getDownloadURL();
+        const name = document.getElementById('productName').value;
+        const price = document.getElementById('productPrice').value;
+        const size = document.getElementById('productSize').value;
+        const category = document.getElementById('productCategory').value;
+        const imageFile = document.getElementById('productImage').files[0];
 
-                // Guardar datos en Firestore
-                const producto = {
-                    nombre: name,
-                    precio: parseFloat(price),
-                    talle: size,
-                    categoria: category,
-                    imagen: imageUrl
-                };
+        // Primero intentamos subir la imagen
+        const storageRef = storage.ref(`productos/${Date.now()}_${imageFile.name}`);
+        console.log('Subiendo imagen...');
+        const snapshot = await storageRef.put(imageFile);
+        console.log('Imagen subida exitosamente');
+        
+        const imageUrl = await snapshot.ref.getDownloadURL();
+        console.log('URL de imagen obtenida:', imageUrl);
 
-                const docRef = await db.collection('productos').add(producto);
-                console.log('Producto agregado con ID: ', docRef.id);
-                cargarProductos(); // Recargar lista de productos
-                productForm.reset(); // Limpiar formulario
-            } catch (error) {
-                console.error('Error al guardar producto: ', error);
-                alert('Error al subir producto: ' + error.message);
-            }
-        });
+        // Luego guardamos en Firestore
+        const producto = {
+            nombre: name,
+            precio: parseFloat(price),
+            talle: size,
+            categoria: category,
+            imagen: imageUrl,
+            fechaCreacion: firebase.firestore.FieldValue.serverTimestamp()
+        };
 
-        // Función para cargar productos
-        async function cargarProductos() {
-            productList.innerHTML = ''; // Limpiar lista
-            const querySnapshot = await db.collection('productos').get();
-            querySnapshot.forEach((doc) => {
-                const producto = doc.data();
-                const productoDiv = document.createElement('div');
-                productoDiv.className = 'col-md-4 mb-4';
-                productoDiv.innerHTML = `
-                    <div class="card product-card">
-                        <img src="${producto.imagen}" class="card-img-top product-image" alt="${producto.nombre}">
-                        <div class="card-body">
-                            <h5 class="card-title">${producto.nombre}</h5>
-                            <p class="card-text">
-                                Precio: $${producto.precio}<br>
-                                Talle: ${producto.talle}<br>
-                                Categoría: ${producto.categoria}
-                            </p>
-                            <div class="d-flex justify-content-between">
-                                <button onclick="editarProducto('${doc.id}')" class="btn btn-warning btn-sm">Editar</button>
-                                <button onclick="eliminarProducto('${doc.id}')" class="btn btn-danger btn-sm">Eliminar</button>
-                            </div>
+        console.log('Guardando producto en Firestore:', producto);
+        const docRef = await db.collection('productos').add(producto);
+        
+        console.log('Producto guardado exitosamente con ID:', docRef.id);
+        alert('Producto guardado exitosamente');
+        
+        cargarProductos(); // Recargar lista
+        productForm.reset(); // Limpiar formulario
+
+    } catch (error) {
+        console.error('Error detallado:', error);
+        alert(`Error: ${error.message}\nCódigo: ${error.code}`);
+    } finally {
+        // Restaurar el botón
+        const submitButton = productForm.querySelector('button[type="submit"]');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Guardar Producto';
+    }
+});
+
+// Función para cargar productos con manejo de errores
+async function cargarProductos() {
+    try {
+        productList.innerHTML = '<div class="text-center">Cargando productos...</div>';
+        
+        const querySnapshot = await db.collection('productos').orderBy('fechaCreacion', 'desc').get();
+        
+        if (querySnapshot.empty) {
+            productList.innerHTML = '<div class="text-center">No hay productos</div>';
+            return;
+        }
+
+        productList.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+            const producto = doc.data();
+            const productoDiv = document.createElement('div');
+            productoDiv.className = 'col-md-4 mb-4';
+            productoDiv.innerHTML = `
+                <div class="card product-card">
+                    <img src="${producto.imagen}" class="card-img-top product-image" alt="${producto.nombre}" onerror="this.src='placeholder.jpg'">
+                    <div class="card-body">
+                        <h5 class="card-title">${producto.nombre}</h5>
+                        <p class="card-text">
+                            Precio: $${producto.precio}<br>
+                            Talle: ${producto.talle}<br>
+                            Categoría: ${producto.categoria}
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <button onclick="editarProducto('${doc.id}')" class="btn btn-warning btn-sm">Editar</button>
+                            <button onclick="eliminarProducto('${doc.id}')" class="btn btn-danger btn-sm">Eliminar</button>
                         </div>
                     </div>
-                `;
-                productList.appendChild(productoDiv);
-            });
-        }
-
-        // Función para eliminar producto
-        async function eliminarProducto(id) {
-            if(confirm('¿Estás seguro de eliminar este producto?')) {
-                try {
-                    await db.collection('productos').doc(id).delete();
-                    cargarProductos();
-                } catch (error) {
-                    console.error('Error al eliminar: ', error);
-                    alert('Error al eliminar producto: ' + error.message);
-                }
-            }
-        }
+                </div>
+            `;
+            productList.appendChild(productoDiv);
+        });
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+        productList.innerHTML = `<div class="alert alert-danger">Error al cargar productos: ${error.message}</div>`;
+    }
+}
 
         // Función para editar producto (mejorada)
         async function editarProducto(id) {
