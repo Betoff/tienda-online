@@ -248,6 +248,22 @@ nav a:hover {
 #checkout-btn:hover {
     background: #34495e;
 }
+.cart-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #2c3e50;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.cart-close-btn:hover {
+    transform: scale(1.1);
+}
 
 @media (max-width: 768px) {
     .product-grid {
