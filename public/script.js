@@ -8,7 +8,134 @@ const firebaseConfig = {
     appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
     measurementId: "G-4RQ3H9J2L1"
 };
+function loadProducts(category = 'all') {
+    const productsContainer = document.getElementById('products-container');
+    const bestSellersContainer = document.getElementById('best-sellers');
+    if (!productsContainer || !bestSellersContainer) return;
 
+    // Limpiar contenedores
+    productsContainer.innerHTML = '<div class="loading">Cargando productos...</div>';
+    bestSellersContainer.innerHTML = '';
+
+    // Crear referencia a la colección de productos
+    let query = db.collection('products');
+    
+    // Filtrar por categoría si no es 'all'
+    if (category !== 'all') {
+        query = query.where('category', '==', category);
+    }
+
+    // Obtener productos
+    query.get().then((querySnapshot) => {
+        // Limpiar el mensaje de carga
+        productsContainer.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+            productsContainer.innerHTML = '<p>No se encontraron productos en esta categoría</p>';
+            return;
+        }
+
+        // Convertir los documentos en array para poder ordenarlos
+        const products = [];
+        querySnapshot.forEach((doc) => {
+            products.push({
+                id: doc.id,
+                ...doc.data()
+            });
+        });
+
+        // Mostrar productos
+        products.forEach(product => {
+            const productCard = createProductCard(product);
+            productsContainer.appendChild(productCard);
+            
+            // Si el producto está marcado como "mejor vendido", agregarlo a esa sección
+            if (product.bestSeller) {
+                const bestSellerCard = createProductCard(product);
+                bestSellersContainer.appendChild(bestSellerCard);
+            }
+        });
+    }).catch((error) => {
+        console.error("Error loading products: ", error);
+        productsContainer.innerHTML = '<p>Error al cargar los productos. Por favor, intenta más tarde.</p>';
+    });
+}
+
+// Función para crear tarjeta de producto
+function createProductCard(product) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    
+    // Crear el HTML de la tarjeta
+    card.innerHTML = `
+        <div class="image-container">
+            <img src="${product.imageUrl}" alt="${product.name}" loading="lazy">
+        </div>
+        <div class="product-info">
+            <h3>${product.name}</h3>
+            <p class="price">$${product.price}</p>
+            <div class="talles-container">
+                <p>Talles disponibles:</p>
+                <div class="talles-grid">
+                    ${createSizesHTML(product.sizes, product.id)}
+                </div>
+            </div>
+            <button onclick="addToCart('${product.id}', '${product.name}', ${product.price})" 
+                    class="add-to-cart-btn">
+                Agregar al carrito
+            </button>
+        </div>
+    `;
+    
+    return card;
+}
+
+// Función para crear HTML de talles
+function createSizesHTML(sizes, productId) {
+    return sizes.map(size => `
+        <div class="talle-option">
+            <label class="talle-label">
+                <input type="radio" 
+                       name="talle-${productId}" 
+                       value="${size.size}"
+                       onchange="handleSizeSelection('${productId}', '${size.size}', ${size.stock})">
+                <span class="talle-text">${size.size}</span>
+                <span class="stock-text">${size.stock} disponibles</span>
+            </label>
+        </div>
+    `).join('');
+}
+
+// Función para manejar la selección de talle
+function handleSizeSelection(productId, size, stock) {
+    selectedSizes[productId] = { talle: size, stock: stock };
+}
+
+// Agregar event listeners para los filtros de categoría
+document.addEventListener('DOMContentLoaded', () => {
+    // Cargar productos inicialmente
+    loadProducts();
+
+    // Agregar listeners para los filtros de categoría
+    const categoryFilters = document.querySelectorAll('.category-filter');
+    categoryFilters.forEach(filter => {
+        filter.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Remover clase activa de todos los filtros
+            categoryFilters.forEach(f => f.classList.remove('active'));
+            // Agregar clase activa al filtro seleccionado
+            filter.classList.add('active');
+            
+            // Obtener categoría del atributo
+            const category = filter.getAttribute('category');
+            currentCategory = category;
+            
+            // Cargar productos de la categoría
+            loadProducts(category);
+        });
+    });
+});
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
