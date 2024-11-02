@@ -48,12 +48,16 @@ async function displayProducts(category = 'all', isLoadMore = false) {
             const product = doc.data();
             const productCard = `
                 <div class="product-card">
-                    <img src="${product.imagen || 'placeholder.jpg'}" alt="${product.nombre}">
-                    <h3>${product.nombre}</h3>
-                    <p class="price">$${product.precio}</p>
-                    <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
-                        Agregar al carrito
-                    </button>
+                    <div class="image-container">
+                        <img src="${product.imagen || 'placeholder.jpg'}" alt="${product.nombre}">
+                    </div>
+                    <div class="product-info">
+                        <h3>${product.nombre}</h3>
+                        <p class="price">$${product.precio}</p>
+                        <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
+                            Agregar al carrito
+                        </button>
+                    </div>
                 </div>
             `;
             productsContainer.innerHTML += productCard;
@@ -85,12 +89,16 @@ async function displayBestSellers() {
             const product = doc.data();
             const productCard = `
                 <div class="product-card">
-                    <img src="${product.imagen || 'placeholder.jpg'}" alt="${product.nombre}">
-                    <h3>${product.nombre}</h3>
-                    <p class="price">$${product.precio}</p>
-                    <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
-                        Agregar al carrito
-                    </button>
+                    <div class="image-container">
+                        <img src="${product.imagen || 'placeholder.jpg'}" alt="${product.nombre}">
+                    </div>
+                    <div class="product-info">
+                        <h3>${product.nombre}</h3>
+                        <p class="price">$${product.precio}</p>
+                        <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
+                            Agregar al carrito
+                        </button>
+                    </div>
                 </div>
             `;
             bestSellersContainer.innerHTML += productCard;
@@ -178,13 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Búsqueda de productos
     document.getElementById('search-bar').addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        const productsContainer = document.getElementById('products-container');
-        
         if (searchTerm.length < 3) {
             displayProducts(currentCategory);
             return;
         }
 
+        const productsContainer = document.getElementById('products-container');
         db.collection('productos')
             .where('nombre', '>=', searchTerm)
             .where('nombre', '<=', searchTerm + '\uf8ff')
@@ -195,12 +202,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const product = doc.data();
                     const productCard = `
                         <div class="product-card">
-                            <img src="${product.imagen || 'placeholder.jpg'}" alt="${product.nombre}">
-                            <h3>${product.nombre}</h3>
-                            <p class="price">$${product.precio}</p>
-                            <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
-                                Agregar al carrito
-                            </button>
+                            <div class="image-container">
+                                <img src="${product.imagen || 'placeholder.jpg'}" alt="${product.nombre}">
+                            </div>
+                            <div class="product-info">
+                                <h3>${product.nombre}</h3>
+                                <p class="price">$${product.precio}</p>
+                                <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
+                                    Agregar al carrito
+                                </button>
+                            </div>
                         </div>
                     `;
                     productsContainer.innerHTML += productCard;
@@ -217,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Tu carrito está vacío');
             return;
         }
-        // Aquí puedes agregar la lógica para procesar la compra
         alert('¡Gracias por tu compra!');
         cart = [];
         updateCartDisplay();
