@@ -2,7 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 
-// Configuración de Firebase
+// Configuración de Firebase usando el método tradicional
 const firebaseConfig = {
     apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
     authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
@@ -14,8 +14,8 @@ const firebaseConfig = {
 };
 
 // Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 // Variables globales
 let lastVisibleProduct = null;
@@ -37,13 +37,13 @@ async function loadProducts(category = 'all') {
         productsContainer.innerHTML = '<div class="loading">Cargando productos...</div>';
         bestSellersContainer.innerHTML = '';
 
-        let queryRef = collection(db, 'products');
+        let queryRef = db.collection('products');
         
         if (category !== 'all') {
-            queryRef = query(queryRef, where('category', '==', category));
+            queryRef = queryRef.where('category', '==', category);
         }
 
-        const querySnapshot = await getDocs(queryRef);
+        const querySnapshot = await queryRef.get();
         
         productsContainer.innerHTML = '';
 
@@ -80,7 +80,6 @@ async function loadProducts(category = 'all') {
         }
     }
 }
-
 // Función para crear tarjeta de producto
 function createProductCard(product) {
     const card = document.createElement('div');
