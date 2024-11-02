@@ -2,71 +2,50 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.firebaseio.com https://*.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://*.googleapis.com cdn.jsdelivr.net; img-src 'self' blob: data: https://*.googleapis.com https://*.gstatic.com https://*.firebase.com https://*.firebaseio.com; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;">
-    <title>Gestor de Productos</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #f4f6f9;
-        }
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 30px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .admin-dashboard {
-            background-color: #f8f9fa;
-            min-height: 100vh;
-            padding-top: 50px;
-        }
-        .product-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .product-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+        .btn-custom {
+            background-color: #4CAF50;
+            color: white;
         }
         .product-image {
-            height: 250px;
+            height: 200px;
             object-fit: cover;
         }
-        .btn-custom {
-            background-color: #6a11cb;
-            color: white;
-        }
-        .btn-custom:hover {
-            background-color: #4f09a1;
-            color: white;
+        .product-card {
+            height: 100%;
         }
     </style>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="container login-container">
-        <div class="text-center mb-4">
-            <h2>Panel de Administración</h2>
+    <div id="loginScreen" class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4">Iniciar Sesión</h2>
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label class="form-label">Usuario</label>
+                                <input type="text" id="username" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña</label>
+                                <input type="password" id="password" class="form-control" required>
+                            </div>
+                            <div id="loginError" class="alert alert-danger" style="display: none;">
+                                Usuario o contraseña incorrectos
+                            </div>
+                            <button type="submit" class="btn btn-custom w-100">Ingresar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-        <form id="loginForm">
-            <div class="mb-3">
-                <label class="form-label">Nombre de Usuario</label>
-                <input type="text" id="username" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Contraseña</label>
-                <input type="password" id="password" class="form-control" required>
-            </div>
-            <div id="loginError" class="text-danger mb-3" style="display:none;">
-                Credenciales incorrectas
-            </div>
-            <button type="submit" class="btn btn-custom w-100">Iniciar Sesión</button>
-        </form>
     </div>
 
-    <!-- Admin Dashboard -->
     <div id="adminDashboard" class="admin-dashboard container" style="display:none;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Gestor de Productos</h2>
@@ -85,16 +64,23 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Talle</label>
-                    <select id="productSize" class="form-control" required>
-                        <option value="s">S</option>
-                        <option value="m">M</option>
-                        <option value="l">L</option>
-                        <option value="xl">XL</option>
-                        <option value="42">42</option>
-                        <option value="44">44</option>
-                        <option value="46">46</option>
-                        <option value="48">48</option>
-                    </select>
+                    <div id="sizesContainer">
+                        <div class="size-input d-flex align-items-center mb-2">
+                            <select class="form-control me-2" required>
+                                <option value="s">S</option>
+                                <option value="m">M</option>
+                                <option value="l">L</option>
+                                <option value="xl">XL</option>
+                                <option value="42">42</option>
+                                <option value="44">44</option>
+                                <option value="46">46</option>
+                                <option value="48">48</option>
+                            </select>
+                            <input type="number" class="form-control me-2" placeholder="Stock" min="0" required>
+                            <button type="button" class="btn btn-sm btn-danger remove-size">×</button>
+                        </div>
+                    </div>
+                    <button type="button" id="addSizeBtn" class="btn btn-sm btn-secondary mt-2">+ Agregar Talle</button>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Categoría</label>
@@ -116,214 +102,405 @@
 
         <div id="productList" class="row"></div>
     </div>
-    <!-- Contenedor donde se mostrarán los productos -->
-<div id="productContainer" class="row"></div>
 
-
-
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
     <script>
-    // Solo una configuración de Firebase
-    const firebaseConfig = {
-        apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
-        authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
-        projectId: "base-de-datos-pagina-f9038",
-        storageBucket: "base-de-datos-pagina-f9038.appspot.com",
-        messagingSenderId: "455220883391",
-        appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
-    };
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+            authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+            projectId: "base-de-datos-pagina-f9038",
+            storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+            messagingSenderId: "455220883391",
+            appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
+        };
 
-    // Inicializar Firebase una sola vez
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
 
-    // Elementos del DOM
-    const loginScreen = document.getElementById('loginScreen');
-    const adminDashboard = document.getElementById('adminDashboard');
-    const loginForm = document.getElementById('loginForm');
-    const loginError = document.getElementById('loginError');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const productForm = document.getElementById('productForm');
-    const productList = document.getElementById('productList');
+        // Elementos del DOM
+        const loginScreen = document.getElementById('loginScreen');
+        const adminDashboard = document.getElementById('adminDashboard');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const productForm = document.getElementById('productForm');
+        const productList = document.getElementById('productList');
 
-    // Verificar sesión al cargar la página
-    document.addEventListener('DOMContentLoaded', () => {
-        const isLoggedIn = localStorage.getItem('isLoggedIn');
-        if (isLoggedIn === 'true') {
-            showDashboard();
-        } else {
-            showLogin();
-        }
-    });
-
-    // Función para mostrar la pantalla de login
-    function showLogin() {
-        loginScreen.style.display = 'block';
-        adminDashboard.style.display = 'none';
-    }
-
-    // Función para mostrar el dashboard
-    function showDashboard() {
-        loginScreen.style.display = 'none';
-        adminDashboard.style.display = 'block';
-        cargarProductos();
-    }
-
-    // Manejo del formulario de login
-    loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        if (username === 'admin' && password === 'martin07') {
-            localStorage.setItem('isLoggedIn', 'true');
-            showDashboard();
-        } else {
-            loginError.style.display = 'block';
-            loginForm.reset();
-        }
-    });
-
-    // Manejo del logout
-    logoutBtn.addEventListener('click', function() {
-        localStorage.removeItem('isLoggedIn');
-        showLogin();
-        loginForm.reset();
-        productList.innerHTML = '';
-    });
-
-    // Manejo del formulario de productos
-    productForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        try {
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Guardando...';
-
-            const name = document.getElementById('productName').value;
-            const price = document.getElementById('productPrice').value;
-            const size = document.getElementById('productSize').value;
-            const category = document.getElementById('productCategory').value;
-            const imageFile = document.getElementById('productImage').files[0];
-
-            // Subir imagen
-            const storageRef = storage.ref(`productos/${Date.now()}_${imageFile.name}`);
-            const snapshot = await storageRef.put(imageFile);
-            const imageUrl = await snapshot.ref.getDownloadURL();
-
-            // Guardar en Firestore
-            const producto = {
-                nombre: name,
-                precio: parseFloat(price),
-                talle: size,
-                categoria: category,
-                imagen: imageUrl,
-                fechaCreacion: firebase.firestore.FieldValue.serverTimestamp(),
-                stock: 10 // Agregamos un stock por defecto
-            };
-
-            await db.collection('productos').add(producto);
-            alert('Producto guardado exitosamente');
-            
-            cargarProductos();
-            productForm.reset();
-
-        } catch (error) {
-            console.error('Error:', error);
-            alert(`Error: ${error.message}`);
-        } finally {
-            const submitButton = productForm.querySelector('button[type="submit"]');
-            submitButton.disabled = false;
-            submitButton.textContent = 'Guardar Producto';
-        }
-    });
-
-    // Función para cargar productos
-    async function cargarProductos() {
-        try {
-            productList.innerHTML = '<div class="text-center">Cargando productos...</div>';
-            
-            const querySnapshot = await db.collection('productos').orderBy('fechaCreacion', 'desc').get();
-            
-            if (querySnapshot.empty) {
-                productList.innerHTML = '<div class="text-center">No hay productos</div>';
-                return;
+        // Verificar sesión al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                showDashboard();
+            } else {
+                showLogin();
             }
+        });
 
+        // Funciones de UI
+        function showLogin() {
+            loginScreen.style.display = 'block';
+            adminDashboard.style.display = 'none';
+        }
+
+        function showDashboard() {
+            loginScreen.style.display = 'none';
+            adminDashboard.style.display = 'block';
+            cargarProductos();
+        }
+
+        // Manejo del login
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'admin' && password === 'martin07') {
+                localStorage.setItem('isLoggedIn', 'true');
+                showDashboard();
+            } else {
+                loginError.style.display = 'block';
+                loginForm.reset();
+            }
+        });
+
+        // Manejo del logout
+        logoutBtn.addEventListener('click', function() {
+            localStorage.removeItem('isLoggedIn');
+            showLogin();
+            loginForm.reset();
             productList.innerHTML = '';
-            querySnapshot.forEach((doc) => {
+        });
+
+        // Funciones para manejar talles y stock
+        document.getElementById('addSizeBtn').addEventListener('click', function() {
+            const sizeInput = document.createElement('div');
+            sizeInput.className = 'size-input d-flex align-items-center mb-2';
+            sizeInput.innerHTML = `
+                <select class="form-control me-2" required>
+                    <option value="s">S</option>
+                    <option value="m">M</option>
+                    <option value="l">L</option>
+                    <option value="xl">XL</option>
+                    <option value="42">42</option>
+                    <option value="44">44</option>
+                    <option value="46">46</option>
+                    <option value="48">48</option>
+                </select>
+                <input type="number" class="form-control me-2" placeholder="Stock" min="0" required>
+                <button type="button" class="btn btn-sm btn-danger remove-size">×</button>
+            `;
+            document.getElementById('sizesContainer').appendChild(sizeInput);
+        });
+
+        document.getElementById('sizesContainer').addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-size')) {
+                e.target.parentElement.remove();
+            }
+        });
+
+        // Función para generar keywords para búsqueda
+        function generateKeywords(productName) {
+            const words = productName.toLowerCase().split(' ');
+            const keywords = new Set();
+            
+            words.forEach(word => {
+                for (let i = 1; i <= word.length; i++) {
+                    keywords.add(word.substring(0, i));
+                }
+            });
+            
+            return Array.from(keywords);
+        }
+
+        // Manejo del formulario de productos
+        productForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const submitButton = e.target.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Guardando...';
+
+                const name = document.getElementById('productName').value;
+                const price = document.getElementById('productPrice').value;
+                const category = document.getElementById('productCategory').value;
+                const imageFile = document.getElementById('productImage').files[0];
+
+                // Recopilar información de talles y stock
+                const sizes = {};
+                document.querySelectorAll('.size-input').forEach(sizeInput => {
+                    const size = sizeInput.querySelector('select').value;
+                    const stock = parseInt(sizeInput.querySelector('input[type="number"]').value);
+                    sizes[size] = stock;
+                });
+
+                // Subir imagen
+                const storageRef = storage.ref(`productos/${Date.now()}_${imageFile.name}`);
+                const snapshot = await storageRef.put(imageFile);
+                const imageUrl = await snapshot.ref.getDownloadURL();
+
+                // Guardar en Firestore
+                const producto = {
+                    nombre: name,
+                    precio: parseFloat(price),
+                    talles: sizes,
+                    categoria: category,
+                    imagen: imageUrl,
+                    fechaCreacion: firebase.firestore.FieldValue.serverTimestamp(),
+                    keywords: generateKeywords(name)
+                };
+
+                await db.collection('productos').add(producto);
+                alert('Producto guardado exitosamente');
+                
+                cargarProductos();
+                productForm.reset();
+                // Limpiar contenedor de talles excepto el primero
+                const sizesContainer = document.getElementById('sizesContainer');
+                while (sizesContainer.children.length > 1) {
+                    sizesContainer.removeChild(sizesContainer.lastChild);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error: ${error.message}`);
+            } finally {
+                const submitButton = productForm.querySelector('button[type="submit"]');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Guardar Producto';
+            }
+        });
+
+        // Función para cargar productos
+        async function cargarProductos() {
+            try {
+                productList.innerHTML = '<div class="text-center">Cargando productos...</div>';
+                
+                const querySnapshot = await db.collection('productos').orderBy('fechaCreacion', 'desc').get();
+                
+                if (querySnapshot.empty) {
+                    productList.innerHTML = '<div class="text-center">No hay productos</div>';
+                    return;
+                }
+
+                productList.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const producto = doc.data();
+                    const tallesHTML = Object.entries(producto.talles || {})
+                        .map(([talle, stock]) => `
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span>Talle ${talle.toUpperCase()}</span>
+                                <div>
+                                    <input type="number" class="form-control form-control-sm d-inline-block w-auto" 
+                                           value="${stock}" 
+                                           min="0"
+                                           onchange="actualizarStock('${doc.id}', '${talle}', this.value)">
+                                </div>
+                            </div>
+                        `).join('');
+
+                    const productoDiv = document.createElement('div');
+                    productoDiv.className = 'col-md-4 mb-4';
+                    productoDiv.innerHTML = `
+                        <div class="card product-card">
+                            <img src="${producto.imagen}" class="card-img-top product-image" alt="${producto.nombre}" onerror="this.src='placeholder.jpg'">
+                            <div class="card-body">
+                                <h5 class="card-title">${producto.nombre}</h5>
+                                <p class="card-text">
+                                    Precio: $${producto.precio}<br>
+                                    Categoría: ${producto.categoria}
+                                </p>
+                                <div class="stock-container mb-3">
+                                    <h6>Stock por talle:</h6>
+                                    ${tallesHTML}
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <button onclick="editarProducto('${doc.id}')" class="btn btn-warning btn-sm">Editar</button>
+                                    <button onclick="eliminarProducto('${doc.id}')" class="btn btn-danger btn-sm">Eliminar</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    productList.appendChild(productoDiv);
+                });
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+                productList.innerHTML = `<div class="alert alert-danger">Error al cargar productos: ${error.message}</div>`;
+            }
+        }
+
+        // Función para actualizar stock
+        async function actualizarStock(productId, talle, nuevoStock) {
+            try {
+                const docRef = db.collection('productos').doc(productId);
+                await docRef.update({
+                    [`talles.${talle}`]: parseInt(nuevoStock)
+                });
+                console.log('Stock actualizado correctamente');
+            }
+            catch (error) {
+                console.error('Error al actualizar stock:', error);
+                alert('Error al actualizar stock: ' + error.message);
+            }
+        }
+
+        // Función para eliminar producto
+        async function eliminarProducto(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+                try {
+                    // Primero obtenemos el producto para conseguir la URL de la imagen
+                    const doc = await db.collection('productos').doc(id).get();
+                    const producto = doc.data();
+                    
+                    // Si el producto tiene una imagen, la eliminamos del storage
+                    if (producto.imagen) {
+                        try {
+                            const imageRef = storage.refFromURL(producto.imagen);
+                            await imageRef.delete();
+                        } catch (imageError) {
+                            console.error('Error al eliminar la imagen:', imageError);
+                            // Continuamos con la eliminación del producto aunque falle la imagen
+                        }
+                    }
+
+                    // Eliminamos el documento de Firestore
+                    await db.collection('productos').doc(id).delete();
+                    alert('Producto eliminado exitosamente');
+                    cargarProductos();
+                } catch (error) {
+                    console.error('Error al eliminar:', error);
+                    alert('Error al eliminar producto: ' + error.message);
+                }
+            }
+        }
+
+        // Función para editar producto
+        async function editarProducto(id) {
+            try {
+                const doc = await db.collection('productos').doc(id).get();
                 const producto = doc.data();
-                const productoDiv = document.createElement('div');
-                productoDiv.className = 'col-md-4 mb-4';
-                productoDiv.innerHTML = `
-                    <div class="card product-card">
-                        <img src="${producto.imagen}" class="card-img-top product-image" alt="${producto.nombre}" onerror="this.src='placeholder.jpg'">
-                        <div class="card-body">
-                            <h5 class="card-title">${producto.nombre}</h5>
-                            <p class="card-text">
-                                Precio: $${producto.precio}<br>
-                                Talle: ${producto.talle}<br>
-                                Categoría: ${producto.categoria}
-                            </p>
-                            <div class="d-flex justify-content-between">
-                                <button onclick="editarProducto('${doc.id}')" class="btn btn-warning btn-sm">Editar</button>
-                                <button onclick="eliminarProducto('${doc.id}')" class="btn btn-danger btn-sm">Eliminar</button>
+
+                // Creamos un formulario modal para editar
+                const modalHtml = `
+                    <div class="modal fade" id="editProductModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Editar Producto</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editProductForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nombre del Producto</label>
+                                            <input type="text" class="form-control" id="editName" value="${producto.nombre}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Precio</label>
+                                            <input type="number" class="form-control" id="editPrice" value="${producto.precio}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Categoría</label>
+                                            <select class="form-control" id="editCategory" required>
+                                                <option value="remeras" ${producto.categoria === 'remeras' ? 'selected' : ''}>Remeras</option>
+                                                <option value="buzos" ${producto.categoria === 'buzos' ? 'selected' : ''}>Buzos</option>
+                                                <option value="pantalones" ${producto.categoria === 'pantalones' ? 'selected' : ''}>Pantalones</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Nueva Imagen (opcional)</label>
+                                            <input type="file" class="form-control" id="editImage" accept="image/*">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-custom">Guardar Cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
-                productList.appendChild(productoDiv);
-            });
-        } catch (error) {
-            console.error('Error al cargar productos:', error);
-            productList.innerHTML = `<div class="alert alert-danger">Error al cargar productos: ${error.message}</div>`;
-        }
-    }
 
-    // Función para editar producto
-    async function editarProducto(id) {
-        try {
-            const doc = await db.collection('productos').doc(id).get();
-            const producto = doc.data();
+                // Añadimos el modal al DOM
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = modalHtml;
+                document.body.appendChild(modalContainer);
 
-            const nuevoNombre = prompt('Editar nombre del producto', producto.nombre);
-            const nuevoPrecio = prompt('Editar precio', producto.precio);
-            const nuevoTalle = prompt('Editar talle', producto.talle);
-            const nuevaCategoria = prompt('Editar categoría', producto.categoria);
+                // Inicializamos el modal de Bootstrap
+                const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
+                modal.show();
 
-            if (nuevoNombre) {
-                await db.collection('productos').doc(id).update({
-                    nombre: nuevoNombre,
-                    precio: parseFloat(nuevoPrecio),
-                    talle: nuevoTalle,
-                    categoria: nuevaCategoria
+                // Manejamos el envío del formulario de edición
+                document.getElementById('editProductForm').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    try {
+                        const submitButton = e.target.querySelector('button[type="submit"]');
+                        submitButton.disabled = true;
+                        submitButton.textContent = 'Guardando...';
+
+                        const updateData = {
+                            nombre: document.getElementById('editName').value,
+                            precio: parseFloat(document.getElementById('editPrice').value),
+                            categoria: document.getElementById('editCategory').value,
+                            keywords: generateKeywords(document.getElementById('editName').value)
+                        };
+
+                        // Si hay una nueva imagen, la subimos
+                        const imageFile = document.getElementById('editImage').files[0];
+                        if (imageFile) {
+                            // Eliminamos la imagen anterior si existe
+                            if (producto.imagen) {
+                                try {
+                                    const oldImageRef = storage.refFromURL(producto.imagen);
+                                    await oldImageRef.delete();
+                                } catch (imageError) {
+                                    console.error('Error al eliminar la imagen anterior:', imageError);
+                                }
+                            }
+
+                            // Subimos la nueva imagen
+                            const storageRef = storage.ref(`productos/${Date.now()}_${imageFile.name}`);
+                            const snapshot = await storageRef.put(imageFile);
+                            updateData.imagen = await snapshot.ref.getDownloadURL();
+                        }
+
+                        // Actualizamos el documento
+                        await db.collection('productos').doc(id).update(updateData);
+                        
+                        modal.hide();
+                        document.getElementById('editProductModal').remove();
+                        alert('Producto actualizado exitosamente');
+                        cargarProductos();
+
+                    } catch (error) {
+                        console.error('Error al actualizar:', error);
+                        alert('Error al actualizar producto: ' + error.message);
+                    }
                 });
-                cargarProductos();
-            }
-        } catch (error) {
-            console.error('Error al editar:', error);
-            alert('Error al editar producto: ' + error.message);
-        }
-    }
 
-    // Función para eliminar producto
-    async function eliminarProducto(id) {
-        if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-            try {
-                await db.collection('productos').doc(id).delete();
-                cargarProductos();
+                // Limpiamos el modal cuando se cierre
+                document.getElementById('editProductModal').addEventListener('hidden.bs.modal', function() {
+                    this.remove();
+                });
+
             } catch (error) {
-                console.error('Error al eliminar:', error);
-                alert('Error al eliminar producto: ' + error.message);
+                console.error('Error al editar:', error);
+                alert('Error al editar producto: ' + error.message);
             }
         }
-    }
     </script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
