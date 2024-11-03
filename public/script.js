@@ -1,156 +1,80 @@
-// Importar Firebase
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+// Variables globales
+let cart = [];
+let selectedSizes = {};
+let lastVisibleProduct = null;
+let currentCategory = 'all';
 
-// 1. Configuración de Firebase
-const firebaseConfig = {
-    apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
-    authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
-    projectId: "base-de-datos-pagina-f9038",
-    storageBucket: "base-de-datos-pagina-f9038.appspot.com",
-    messagingSenderId: "455220883391",
-    appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
-    measurementId: "G-4RQ3H9J2L1"
-};
-
-// 2. Inicialización de Firebase
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar Firebase
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.firestore();
-
-    // 3. Función para cargar productos
-    async function loadProducts(category = 'all') {
-        try {
-            let query = db.collection('productos');
-            
-            if (category !== 'all') {
-                query = query.where('categoria', '==', category);
-            }
-            
-            const snapshot = await query.get();
-            const productsContainer = document.getElementById('products-container');
-            
-            if (productsContainer) {
-                productsContainer.innerHTML = '';
-                
-                snapshot.forEach(doc => {
-                    const product = doc.data();
-                    const productCard = `
-                        <div class="product-card">
-                            <div class="image-container">
-                                <img src="${product.imagen}" alt="${product.nombre}">
-                            </div>
-                            <div class="product-info">
-                                <h3>${product.nombre}</h3>
-                                <p class="price">$${product.precio}</p>
-                                <div class="talles-container">
-                                    <div class="talles-grid">
-                                        ${product.talles.map(talle => `
-                                            <div class="talle-option">
-                                                <label class="talle-label">
-                                                    <input type="radio" name="talle-${doc.id}" 
-                                                           onclick="selectSize('${doc.id}', '${talle.nombre}', ${talle.stock})">
-                                                    <span class="talle-text">${talle.nombre}</span>
-                                                    <span class="stock-text">Stock: ${talle.stock}</span>
-                                                </label>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                                <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
-                                    Agregar al carrito
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    productsContainer.innerHTML += productCard;
-                });
-            }
-        } catch (error) {
-            console.error("Error al cargar productos:", error);
+// Función para cargar productos
+async function loadProducts(category = 'all') {
+    try {
+        let query = db.collection('productos');
+        
+        if (category !== 'all') {
+            query = query.where('categoria', '==', category);
         }
+        
+        const snapshot = await query.get();
+        const productsContainer = document.getElementById('products-container');
+        
+        if (productsContainer) {
+            productsContainer.innerHTML = '';
+            
+            snapshot.forEach(doc => {
+                const product = doc.data();
+                const productCard = `
+                    <div class="product-card">
+                        <div class="image-container">
+                            <img src="${product.imagen}" alt="${product.nombre}">
+                        </div>
+                        <div class="product-info">
+                            <h3>${product.nombre}</h3>
+                            <p class="price">$${product.precio}</p>
+                            <div class="talles-container">
+                                <div class="talles-grid">
+                                    ${product.talles.map(talle => `
+                                        <div class="talle-option">
+                                            <label class="talle-label">
+                                                <input type="radio" name="talle-${doc.id}" 
+                                                       onclick="selectSize('${doc.id}', '${talle.nombre}', ${talle.stock})">
+                                                <span class="talle-text">${talle.nombre}</span>
+                                                <span class="stock-text">Stock: ${talle.stock}</span>
+                                            </label>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
+                                Agregar al carrito
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productsContainer.innerHTML += productCard;
+            });
+        }
+    } catch (error) {
+        console.error("Error al cargar productos:", error);
     }
-
-    // 4. Cargar productos iniciales
-    loadProducts();
-
-    // 5. Event listeners para filtros de categoría
-    document.querySelectorAll('.category-filter').forEach(filter => {
-        filter.addEventListener('click', (e) => {
-            e.preventDefault();
-            const category = filter.getAttribute('category');
-            loadProducts(category);
-        });
-    });
-});
-
-// 6. Función para seleccionar talle
-window.selectSize = function(productId, talle, stock) {
-    selectedSizes[productId] = { talle, stock };
-}
-// Función para crear tarjeta de producto
-function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    
-    card.innerHTML = `
-        <div class="image-container">
-            <img src="${product.imageUrl}" alt="${product.name}" loading="lazy">
-        </div>
-        <div class="product-info">
-            <h3>${product.name}</h3>
-            <p class="price">$${product.price}</p>
-            <div class="talles-container">
-                <p>Talles disponibles:</p>
-                <div class="talles-grid">
-                    ${createSizesHTML(product.sizes, product.id)}
-                </div>
-            </div>
-            <button onclick="addToCart('${product.id}', '${product.name}', ${product.price})" 
-                    class="add-to-cart-btn">
-                Agregar al carrito
-            </button>
-        </div>
-    `;
-    
-    return card;
 }
 
-// Función para crear HTML de talles
-function createSizesHTML(sizes, productId) {
-    return sizes.map(size => `
-        <div class="talle-option">
-            <label class="talle-label">
-                <input type="radio" 
-                       name="talle-${productId}" 
-                       value="${size.size}"
-                       onchange="handleSizeSelection('${productId}', '${size.size}', ${size.stock})">
-                <span class="talle-text">${size.size}</span>
-                <span class="stock-text">${size.stock} disponibles</span>
-            </label>
-        </div>
-    `).join('');
-}
-
-// Función para manejar la selección de talle
-function handleSizeSelection(productId, size, stock) {
-    selectedSizes[productId] = { talle: size, stock: stock };
-}
-
-// Funciones del carrito
+// Función para mostrar/ocultar el carrito
 function toggleCart() {
     const cartElement = document.getElementById('cart');
     cartElement.classList.toggle('show');
 }
 
+// Función para cerrar el carrito
 function closeCart() {
     const cartElement = document.getElementById('cart');
     cartElement.classList.remove('show');
 }
 
+// Función para seleccionar talle
+function selectSize(productId, talle, stock) {
+    selectedSizes[productId] = { talle, stock };
+}
+
+// Función para agregar al carrito
 function addToCart(productId, name, price) {
     if (!selectedSizes[productId]) {
         alert('Por favor selecciona un talle');
@@ -183,15 +107,10 @@ function addToCart(productId, name, price) {
     document.getElementById('cart').classList.add('show');
 }
 
+// Función para actualizar el carrito
 function updateCartDisplay() {
     const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
-    
-    if (!cartItems || !cartTotal) {
-        console.error('Elementos del carrito no encontrados');
-        return;
-    }
-
     let total = 0;
 
     cartItems.innerHTML = cart.map(item => {
@@ -216,16 +135,15 @@ function updateCartDisplay() {
         `;
     }).join('');
 
-    cartTotal.textContent = `$${total}`;
+    cartTotal.textContent = `Total: $${total}`;
     
     const cartCount = document.getElementById('cart-count');
-    if (cartCount) {
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCount.textContent = totalItems;
-        cartCount.style.display = totalItems > 0 ? 'block' : 'none';
-    }
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    cartCount.textContent = totalItems;
+    cartCount.style.display = totalItems > 0 ? 'block' : 'none';
 }
 
+// Función para actualizar cantidad
 function updateQuantity(productId, talle, change) {
     const item = cart.find(item => item.id === productId && item.talle === talle);
     if (item) {
@@ -237,6 +155,7 @@ function updateQuantity(productId, talle, change) {
     }
 }
 
+// Función para remover del carrito
 function removeFromCart(productId, talle) {
     cart = cart.filter(item => !(item.id === productId && item.talle === talle));
     updateCartDisplay();
@@ -244,70 +163,57 @@ function removeFromCart(productId, talle) {
 
 // Función para crear mensaje de WhatsApp
 function createWhatsAppMessage() {
-    let message = "¡Hola! Me gustaría realizar el siguiente pedido:\n\n";
+    let message = 'Hola! Me gustaría comprar:%0A';
     cart.forEach(item => {
-        message += `${item.name} - Talle: ${item.talle} - Cantidad: ${item.quantity} - $${item.price * item.quantity}\n`;
+        message += `- ${item.quantity}x ${item.name} (Talle: ${item.talle}) - $${item.price * item.quantity}%0A`;
     });
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    message += `\nTotal: $${total}`;
+    message += `%0ATotal: $${total}`;
     return encodeURIComponent(message);
 }
 
-// Event Listeners
+// Event Listeners cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', () => {
-    // Cargar productos inicialmente
+    // Cargar productos iniciales
     loadProducts();
 
-    // Configurar filtros de categoría
-    const categoryFilters = document.querySelectorAll('.category-filter');
-    categoryFilters.forEach(filter => {
+    // Event listeners para filtros de categoría
+    document.querySelectorAll('.category-filter').forEach(filter => {
         filter.addEventListener('click', (e) => {
             e.preventDefault();
-            categoryFilters.forEach(f => f.classList.remove('active'));
-            filter.classList.add('active');
             const category = filter.getAttribute('category');
             currentCategory = category;
             loadProducts(category);
         });
     });
 
-    // Configurar carrito
+    // Event listener para el botón del carrito
     const cartToggle = document.getElementById('cart-toggle');
-    const cart = document.getElementById('cart');
-    const checkoutBtn = document.getElementById('checkout-btn');
-    
-    if (cartToggle && cart && checkoutBtn) {
-        cartToggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleCart();
-        });
+    cartToggle.addEventListener('click', toggleCart);
 
-        const closeButton = document.createElement('button');
-        closeButton.innerHTML = '✕';
-        closeButton.className = 'cart-close-btn';
-        closeButton.onclick = closeCart;
-        cart.insertBefore(closeButton, cart.firstChild);
-
-        checkoutBtn.addEventListener('click', () => {
-            if (cart.length === 0) {
-                alert('Tu carrito está vacío');
-                return;
-            }
-            
-            const message = createWhatsAppMessage();
-            window.open(`https://wa.me/543765225116?text=${message}`, '_blank');
-            
-            cart = [];
-            updateCartDisplay();
+    // Event listener para cerrar el carrito cuando se hace clic fuera
+    document.addEventListener('click', (e) => {
+        const cart = document.getElementById('cart');
+        if (cart.classList.contains('show') && 
+            !cart.contains(e.target) && 
+            e.target !== cartToggle) {
             closeCart();
-        });
+        }
+    });
 
-        document.addEventListener('click', (e) => {
-            if (cart.classList.contains('show') && 
-                !cart.contains(e.target) && 
-                e.target !== cartToggle) {
-                closeCart();
-            }
-        });
-    }
+    // Event listener para el botón de checkout
+    const checkoutBtn = document.getElementById('checkout-btn');
+    checkoutBtn.addEventListener('click', () => {
+        if (cart.length === 0) {
+            alert('Tu carrito está vacío');
+            return;
+        }
+        
+        const message = createWhatsAppMessage();
+        window.open(`https://wa.me/543765225116?text=${message}`, '_blank');
+        
+        cart = [];
+        updateCartDisplay();
+        closeCart();
+    });
 });
