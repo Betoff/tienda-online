@@ -3,50 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda de Clientes</title>
+    <title>POSADASCHIC</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome para los iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-
-<!-- Firebase App (la base) -->
-<script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
-<!-- Firestore -->
-<script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore-compat.js"></script>
-<!-- Tu script -->
-<script src="script.js"></script>
-    
+    <!-- Firebase App (la base) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <!-- Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <header>
         <h1>POSADASCHIC</h1>
     </header>
+
     <nav>
         <ul>
-            <li><a href="#" class="category-filter" data-category="all">Todo</a></li>
-            <li><a href="#" class="category-filter" data-category="Pantalones">Pantalones</a></li>
-            <li><a href="#" class="category-filter" data-category="Remeras">Remeras</a></li>
-            <li><a href="#" class="category-filter" data-category="Buzos">Buzos</a></li>
+            <li><a href="#" class="category-filter" category="all">Todo</a></li>
+            <li><a href="#" class="category-filter" category="Pantalones">Pantalones</a></li>
+            <li><a href="#" class="category-filter" category="Remeras">Remeras</a></li>
+            <li><a href="#" class="category-filter" category="Buzos">Buzos</a></li>
         </ul>
     </nav>
+
     <div class="container">
-        <input type="text" id="search-bar" placeholder="Buscar productos...">
-        <h2 class="section-title">Más vendidos</h2>
-        <div id="best-sellers" class="product-grid"></div>
-        <h2 class="section-title">Catálogo completo</h2>
-        <div id="products-container" class="product-grid"></div>
-        <button id="load-more" class="load-more-btn">Ver más</button>
+        <section>
+            <h2 class="section-title">Más vendidos</h2>
+            <div id="best-sellers" class="product-grid"></div>
+        </section>
+
+        <section>
+            <h2 class="section-title">Catálogo completo</h2>
+            <div id="products-container" class="product-grid"></div>
+        </section>
     </div>
-    <button id="cart-toggle" class="cart-toggle">
-        <i class="fas fa-shopping-cart"></i>
-        <span id="cart-count"></span>
+
+    <button id="cart-toggle">
+        🛒
+        <span id="cart-count">0</span>
     </button>
+
     <div id="cart" class="cart">
         <h3>Tu carrito</h3>
         <div id="cart-items"></div>
-        <p>Total: $<span id="cart-total">0</span></p>
-        <button id="checkout-btn" class="checkout-btn">Finalizar compra</button>
+        <div id="cart-total">Total: $0</div>
+        <button id="checkout-btn">Finalizar compra</button>
     </div>
+
+    <script>
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+            authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+            projectId: "base-de-datos-pagina-f9038",
+            storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+            messagingSenderId: "455220883391",
+            appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
+            measurementId: "G-4RQ3H9J2L1"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+    </script>
+    <script src="script.js"></script>
 </body>
 </html>
