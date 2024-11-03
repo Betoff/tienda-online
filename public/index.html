@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POSADASCHIC</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase App (la base) -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <!-- Firestore -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 </head>
 <body>
     <header>
@@ -17,23 +16,19 @@
 
     <nav>
         <ul>
-            <li><a href="#" class="category-filter" category="all">Todo</a></li>
-            <li><a href="#" class="category-filter" category="Pantalones">Pantalones</a></li>
-            <li><a href="#" class="category-filter" category="Remeras">Remeras</a></li>
-            <li><a href="#" class="category-filter" category="Buzos">Buzos</a></li>
+            <li><a href="#" class="category-filter" data-category="all">Todo</a></li>
+            <li><a href="#" class="category-filter" data-category="Pantalones">Pantalones</a></li>
+            <li><a href="#" class="category-filter" data-category="Remeras">Remeras</a></li>
+            <li><a href="#" class="category-filter" data-category="Buzos">Buzos</a></li>
         </ul>
     </nav>
 
     <div class="container">
-        <section>
-            <h2 class="section-title">Más vendidos</h2>
-            <div id="best-sellers" class="product-grid"></div>
-        </section>
+        <h2 class="section-title">Más vendidos</h2>
+        <div id="best-sellers" class="product-grid"></div>
 
-        <section>
-            <h2 class="section-title">Catálogo completo</h2>
-            <div id="products-container" class="product-grid"></div>
-        </section>
+        <h2 class="section-title">Catálogo completo</h2>
+        <div id="products-container" class="product-grid"></div>
     </div>
 
     <button id="cart-toggle">
@@ -48,8 +43,8 @@
         <button id="checkout-btn">Finalizar compra</button>
     </div>
 
+    <!-- Firebase Config -->
     <script>
-        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
             authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
@@ -60,10 +55,12 @@
             measurementId: "G-4RQ3H9J2L1"
         };
 
-        // Inicializar Firebase
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
     </script>
+    
+    <!-- Tu script principal -->
     <script src="script.js"></script>
 </body>
 </html>
