@@ -10,7 +10,7 @@ async function loadProducts(category = 'all') {
         let query = db.collection('productos');
         
         if (category !== 'all') {
-            query = query.where('categoria', '==', category.toLowerCase());
+            query = query.where('categoria', '==', category);
         }
         
         const snapshot = await query.get();
@@ -29,12 +29,6 @@ async function loadProducts(category = 'all') {
                 const product = doc.data();
                 console.log('Producto encontrado:', product); // Debug log
                 
-                // Convertir el mapa de talles a un array de objetos
-                const tallesArray = Object.entries(product.talles || {}).map(([talle, stock]) => ({
-                    nombre: talle,
-                    stock: stock
-                }));
-                
                 const productCard = `
                     <div class="product-card">
                         <div class="image-container">
@@ -45,7 +39,7 @@ async function loadProducts(category = 'all') {
                             <p class="price">$${product.precio}</p>
                             <div class="talles-container">
                                 <div class="talles-grid">
-                                    ${tallesArray.map(talle => `
+                                    ${(product.talles || []).map(talle => `
                                         <div class="talle-option">
                                             <label class="talle-label">
                                                 <input type="radio" name="talle-${doc.id}" 
@@ -202,10 +196,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle del carrito
     const cartToggle = document.getElementById('cart-toggle');
     const cart = document.getElementById('cart');
+    const closeCart = document.getElementById('close-cart');
     
     if (cartToggle) {
         cartToggle.addEventListener('click', () => {
             cart.classList.toggle('show');
+        });
+    }
+
+    if (closeCart) {
+        closeCart.addEventListener('click', () => {
+            cart.classList.remove('show');
         });
     }
 
