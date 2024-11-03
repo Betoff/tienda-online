@@ -29,6 +29,13 @@ async function loadProducts(category = 'all') {
                 const product = doc.data();
                 console.log('Producto encontrado:', product); // Debug log
                 
+                // Convertir el objeto de talles en un array
+                const tallesArray = product.talles ? 
+                    Object.entries(product.talles).map(([nombre, stock]) => ({
+                        nombre,
+                        stock
+                    })) : [];
+                
                 const productCard = `
                     <div class="product-card">
                         <div class="image-container">
@@ -39,7 +46,7 @@ async function loadProducts(category = 'all') {
                             <p class="price">$${product.precio}</p>
                             <div class="talles-container">
                                 <div class="talles-grid">
-                                    ${(product.talles || []).map(talle => `
+                                    ${tallesArray.map(talle => `
                                         <div class="talle-option">
                                             <label class="talle-label">
                                                 <input type="radio" name="talle-${doc.id}" 
@@ -73,6 +80,8 @@ async function loadProducts(category = 'all') {
 function selectSize(productId, talle, stock) {
     selectedSizes[productId] = { talle, stock };
 }
+
+// Resto del código permanece igual...
 
 // Función para agregar al carrito
 function addToCart(productId, name, price) {
