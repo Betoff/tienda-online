@@ -363,6 +363,26 @@ nav a:hover {
     display: block;
     text-align: center;
 }
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.close-cart {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 5px;
+    color: #333;
+}
+
+.close-cart:hover {
+    color: #000;
+}
 
 /* Media Queries mejorados */
 @media (max-width: 768px) {
