@@ -2,7 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 
-// Configuración de Firebase usando el método tradicional
+// 1. Configuración de Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
     authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
@@ -13,72 +13,83 @@ const firebaseConfig = {
     measurementId: "G-4RQ3H9J2L1"
 };
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// 2. Inicialización de Firebase
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar Firebase
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
 
-// Variables globales
-let lastVisibleProduct = null;
-let currentCategory = 'all';
-let cart = [];
-let selectedSizes = {};
-
-// Función para cargar productos
-async function loadProducts(category = 'all') {
-    try {
-        const productsContainer = document.getElementById('products-container');
-        const bestSellersContainer = document.getElementById('best-sellers');
-        
-        if (!productsContainer || !bestSellersContainer) {
-            console.error('Contenedores no encontrados');
-            return;
-        }
-
-        productsContainer.innerHTML = '<div class="loading">Cargando productos...</div>';
-        bestSellersContainer.innerHTML = '';
-
-        let queryRef = db.collection('products');
-        
-        if (category !== 'all') {
-            queryRef = queryRef.where('category', '==', category);
-        }
-
-        const querySnapshot = await queryRef.get();
-        
-        productsContainer.innerHTML = '';
-
-        if (querySnapshot.empty) {
-            productsContainer.innerHTML = '<p>No se encontraron productos en esta categoría</p>';
-            return;
-        }
-
-        querySnapshot.forEach((doc) => {
-            const product = {
-                id: doc.id,
-                ...doc.data()
-            };
+    // 3. Función para cargar productos
+    async function loadProducts(category = 'all') {
+        try {
+            let query = db.collection('productos');
             
-            const productCard = createProductCard(product);
-            productsContainer.appendChild(productCard);
-            
-            if (product.bestSeller) {
-                const bestSellerCard = createProductCard(product);
-                bestSellersContainer.appendChild(bestSellerCard);
+            if (category !== 'all') {
+                query = query.where('categoria', '==', category);
             }
-        });
-    } catch (error) {
-        console.error("Error al cargar productos:", error);
-        const productsContainer = document.getElementById('products-container');
-        if (productsContainer) {
-            productsContainer.innerHTML = `
-                <div class="error-message">
-                    Error al cargar los productos. Por favor, intenta más tarde.
-                    <br>
-                    Detalles: ${error.message}
-                </div>
-            `;
+            
+            const snapshot = await query.get();
+            const productsContainer = document.getElementById('products-container');
+            
+            if (productsContainer) {
+                productsContainer.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const product = doc.data();
+                    const productCard = `
+                        <div class="product-card">
+                            <div class="image-container">
+                                <img src="${product.imagen}" alt="${product.nombre}">
+                            </div>
+                            <div class="product-info">
+                                <h3>${product.nombre}</h3>
+                                <p class="price">$${product.precio}</p>
+                                <div class="talles-container">
+                                    <div class="talles-grid">
+                                        ${product.talles.map(talle => `
+                                            <div class="talle-option">
+                                                <label class="talle-label">
+                                                    <input type="radio" name="talle-${doc.id}" 
+                                                           onclick="selectSize('${doc.id}', '${talle.nombre}', ${talle.stock})">
+                                                    <span class="talle-text">${talle.nombre}</span>
+                                                    <span class="stock-text">Stock: ${talle.stock}</span>
+                                                </label>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
+                                    Agregar al carrito
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    productsContainer.innerHTML += productCard;
+                });
+            }
+        } catch (error) {
+            console.error("Error al cargar productos:", error);
         }
     }
+
+    // 4. Cargar productos iniciales
+    loadProducts();
+
+    // 5. Event listeners para filtros de categoría
+    document.querySelectorAll('.category-filter').forEach(filter => {
+        filter.addEventListener('click', (e) => {
+            e.preventDefault();
+            const category = filter.getAttribute('category');
+            loadProducts(category);
+        });
+    });
+});
+
+// 6. Función para seleccionar talle
+window.selectSize = function(productId, talle, stock) {
+    selectedSizes[productId] = { talle, stock };
 }
 // Función para crear tarjeta de producto
 function createProductCard(product) {
