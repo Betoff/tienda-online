@@ -1,14 +1,3 @@
-// Configuración de Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
-  authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
-  projectId: "base-de-datos-pagina-f9038",
-  storageBucket: "base-de-datos-pagina-f9038.appspot.com",
-  messagingSenderId: "455220883391",
-  appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
-  measurementId: "G-4RQ3H9J2L1"
-};
-
 // Inicializar Firebase
 firebase.initializeApp(firebaseConfig);
 
