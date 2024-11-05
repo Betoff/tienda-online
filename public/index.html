@@ -8,6 +8,27 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <!-- Add Firebase Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  
+  <!-- Initialize Firebase -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+      authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+      projectId: "base-de-datos-pagina-f9038",
+      storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+      messagingSenderId: "455220883391",
+      appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
+      measurementId: "G-4RQ3H9J2L1"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
 </head>
 <body>
   <header>
@@ -53,6 +74,7 @@
     </button>
   </div>
 
+  <!-- Tu script personalizado debe ir después de Firebase -->
   <script src="script.js"></script>
 </body>
 </html>
