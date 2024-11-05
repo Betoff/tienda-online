@@ -164,7 +164,7 @@ function removeItem(index) {
   updateCartDisplay();
 }
 
-// Event Listeners
+// Busca esta sección en tu script.js y reemplázala
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
   loadProducts();
@@ -173,9 +173,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const categoryBtn = document.getElementById('category-btn');
   const categoryList = document.getElementById('category-list');
   
-  categoryBtn.addEventListener('click', () => {
-    categoryList.classList.toggle('show');
-  });
+  if (categoryBtn && categoryList) {
+    categoryBtn.addEventListener('click', () => {
+      categoryList.classList.toggle('show');
+    });
+  }
 
   // Filtros de categoría
   document.querySelectorAll('.category-filter').forEach(filter => {
@@ -190,50 +192,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Toggle carrito
   const cartToggle = document.getElementById('cart-toggle');
-  const cart = document.getElementById('cart');
+  const cartElement = document.getElementById('cart');
   const closeCart = document.getElementById('close-cart');
   
-  cartToggle.addEventListener('click', () => {
-    cart.classList.toggle('show');
-  });
+  if (cartToggle && cartElement) {
+    cartToggle.addEventListener('click', () => {
+      cartElement.classList.toggle('show');
+    });
+  }
   
-  closeCart.addEventListener('click', () => {
-    cart.classList.remove('show');
-  });
+  if (closeCart) {
+    closeCart.addEventListener('click', () => {
+      cartElement.classList.remove('show');
+    });
+  }
 
   // Checkout con WhatsApp
-  document.getElementById('checkout-btn').addEventListener('click', () => {
-    if (cart.length === 0) {
-      alert('Tu carrito está vacío');
-      return;
-    }
+  const checkoutBtn = document.getElementById('checkout-btn');
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', function() {
+      console.log('Botón de checkout clickeado'); // Debug log
+      
+      if (cart.length === 0) {
+        alert('Tu carrito está vacío');
+        return;
+      }
 
-    // Crear el mensaje para WhatsApp
-    let mensaje = "¡Hola! Quiero realizar la siguiente compra:%0A%0A";
-    let total = 0;
+      try {
+        // Crear el mensaje para WhatsApp
+        let mensaje = "¡Hola! Quiero realizar la siguiente compra:%0A%0A";
+        let total = 0;
 
-    // Agregar cada item del carrito al mensaje
-    cart.forEach(item => {
-      const itemTotal = item.price * item.quantity;
-      total += itemTotal;
-      mensaje += `▪ ${item.quantity}x ${item.name} (Talle: ${item.size}) - $${itemTotal}%0A`;
+        // Agregar cada item del carrito al mensaje
+        cart.forEach(item => {
+          const itemTotal = item.price * item.quantity;
+          total += itemTotal;
+          mensaje += `▪ ${item.quantity}x ${item.name} (Talle: ${item.size}) - $${itemTotal}%0A`;
+        });
+
+        // Agregar el total al mensaje
+        mensaje += `%0ATotal: $${total}`;
+
+        // Número de WhatsApp (agregar código de país)
+        const numeroWhatsApp = "543765225116";
+
+        // Crear el enlace de WhatsApp con el mensaje
+        const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
+        
+        console.log('URL de WhatsApp:', urlWhatsApp); // Debug log
+
+        // Abrir WhatsApp en una nueva ventana
+        window.open(urlWhatsApp, '_blank');
+
+        // Limpiar el carrito
+        cart = [];
+        updateCartDisplay();
+        document.getElementById('cart').classList.remove('show');
+        
+        console.log('Compra finalizada exitosamente'); // Debug log
+      } catch (error) {
+        console.error('Error al procesar la compra:', error);
+        alert('Hubo un error al procesar tu compra. Por favor, intenta de nuevo.');
+      }
     });
-
-    // Agregar el total al mensaje
-    mensaje += `%0ATotal: $${total}`;
-
-    // Número de WhatsApp (agregar código de país)
-    const numeroWhatsApp = "543765225116"; // Agregué el 54 para Argentina
-
-    // Crear el enlace de WhatsApp con el mensaje
-    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
-
-    // Abrir WhatsApp en una nueva ventana
-    window.open(urlWhatsApp, '_blank');
-
-    // Limpiar el carrito
-    cart = [];
-    updateCartDisplay();
-    document.getElementById('cart').classList.remove('show');
-  });
+  }
 });
