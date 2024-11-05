@@ -29,7 +29,6 @@ async function loadProducts(category = 'all') {
                 const product = doc.data();
                 console.log('Producto encontrado:', product); // Debug log
                 
-                // Convertir el objeto de talles en un array
                 const tallesArray = product.talles ? 
                     Object.entries(product.talles).map(([nombre, stock]) => ({
                         nombre,
@@ -58,7 +57,8 @@ async function loadProducts(category = 'all') {
                                     `).join('')}
                                 </div>
                             </div>
-                            <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
+                            <button onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})"
+                                    class="add-to-cart-btn">
                                 Agregar al carrito
                             </button>
                         </div>
@@ -79,9 +79,17 @@ async function loadProducts(category = 'all') {
 // Función para seleccionar talle
 function selectSize(productId, talle, stock) {
     selectedSizes[productId] = { talle, stock };
+    
+    // Actualizar visual de botón seleccionado
+    document.querySelectorAll(`input[name="talle-${productId}"]`).forEach(input => {
+        const label = input.closest('.talle-label');
+        if (input.checked) {
+            label.classList.add('selected');
+        } else {
+            label.classList.remove('selected');
+        }
+    });
 }
-
-// Resto del código permanece igual...
 
 // Función para agregar al carrito
 function addToCart(productId, name, price) {
@@ -113,6 +121,17 @@ function addToCart(productId, name, price) {
     }
 
     updateCartDisplay();
+    
+    // Mostrar feedback visual
+    const addedFeedback = document.createElement('div');
+    addedFeedback.classList.add('added-feedback');
+    addedFeedback.textContent = '¡Agregado al carrito!';
+    document.body.appendChild(addedFeedback);
+    
+    setTimeout(() => {
+        addedFeedback.remove();
+    }, 2000);
+    
     document.getElementById('cart').classList.add('show');
 }
 
@@ -132,9 +151,9 @@ function updateCartDisplay() {
                         <span class="item-name">${item.name}</span>
                         <span class="item-size">Talle: ${item.talle}</span>
                         <div class="quantity-controls">
-                            <button onclick="updateQuantity('${item.id}', '${item.talle}', -1)">-</button>
+                            <button class="quantity-btn" onclick="updateQuantity('${item.id}', '${item.talle}', -1)">-</button>
                             <span class="item-quantity">${item.quantity}</span>
-                            <button onclick="updateQuantity('${item.id}', '${item.talle}', 1)">+</button>
+                            <button class="quantity-btn" onclick="updateQuantity('${item.id}', '${item.talle}', 1)">+</button>
                         </div>
                     </div>
                     <div class="cart-item-price">
@@ -151,7 +170,7 @@ function updateCartDisplay() {
         if (cartCount) {
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             cartCount.textContent = totalItems;
-            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
+            cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
         }
     }
 }
@@ -161,36 +180,63 @@ function updateQuantity(productId, talle, change) {
     const item = cart.find(item => item.id === productId && item.talle === talle);
     if (item) {
         const newQuantity = item.quantity + change;
-        if (newQuantity > 0 && newQuantity <= selectedSizes[productId].stock) {
+        const maxStock = selectedSizes[productId].stock;
+        
+        if (newQuantity > 0 && newQuantity <= maxStock) {
             item.quantity = newQuantity;
             updateCartDisplay();
+        } else if (newQuantity > maxStock) {
+            alert('No hay más stock disponible para este talle');
         }
     }
 }
 
 // Función para remover del carrito
 function removeFromCart(productId, talle) {
-    cart = cart.filter(item => !(item.id === productId && item.talle === talle));
-    updateCartDisplay();
+    const confirmDelete = confirm('¿Estás seguro de que quieres eliminar este producto del carrito?');
+    if (confirmDelete) {
+        cart = cart.filter(item => !(item.id === productId && item.talle === talle));
+        updateCartDisplay();
+    }
 }
 
 // Función para el mensaje de WhatsApp
 function createWhatsAppMessage() {
-    let message = 'Hola! Me gustaría comprar:\n';
+    let message = '¡Hola! Me gustaría realizar el siguiente pedido:\n\n';
     cart.forEach(item => {
-        message += `- ${item.quantity}x ${item.name} (Talle: ${item.talle}) - $${item.price * item.quantity}\n`;
+        message += `• ${item.quantity}x ${item.name}\n`;
+        message += `  Talle: ${item.talle}\n`;
+        message += `  Subtotal: $${item.price * item.quantity}\n\n`;
     });
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    message += `\nTotal: $${total}`;
+    message += `\nTotal del pedido: $${total}`;
     return encodeURIComponent(message);
 }
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Cargado'); // Debug log
+    console.log('DOM Cargado');
     
     // Cargar productos iniciales
     loadProducts();
+
+    // Manejar menú de categorías
+    const categoryBtn = document.getElementById('category-btn');
+    const categoryList = document.getElementById('category-list');
+
+    if (categoryBtn && categoryList) {
+        categoryBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            categoryList.classList.toggle('show');
+        });
+
+        // Cerrar menú al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!categoryBtn.contains(e.target) && !categoryList.contains(e.target)) {
+                categoryList.classList.remove('show');
+            }
+        });
+    }
 
     // Event listeners para filtros de categoría
     document.querySelectorAll('.category-filter').forEach(filter => {
@@ -199,6 +245,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = filter.getAttribute('data-category');
             currentCategory = category;
             loadProducts(category);
+            categoryList.classList.remove('show');
+            
+            // Actualizar texto del botón
+            if (categoryBtn) {
+                categoryBtn.textContent = category === 'all' ? 'Categorías' : filter.textContent;
+            }
         });
     });
 
@@ -207,13 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const cart = document.getElementById('cart');
     const closeCart = document.getElementById('close-cart');
     
-    if (cartToggle) {
+    if (cartToggle && cart) {
         cartToggle.addEventListener('click', () => {
             cart.classList.toggle('show');
         });
     }
 
-    if (closeCart) {
+    if (closeCart && cart) {
         closeCart.addEventListener('click', () => {
             cart.classList.remove('show');
         });
@@ -231,9 +283,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const message = createWhatsAppMessage();
             window.open(`https://wa.me/543765225116?text=${message}`, '_blank');
             
+            // Limpiar carrito después de enviar el pedido
             cart = [];
             updateCartDisplay();
-            cart.classList.remove('show');
+            document.getElementById('cart').classList.remove('show');
         });
     }
 });
