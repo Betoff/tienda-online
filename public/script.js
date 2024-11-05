@@ -165,6 +165,7 @@ function removeItem(index) {
 }
 
 // Event Listeners
+// Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
   loadProducts();
   
@@ -200,14 +201,37 @@ document.addEventListener('DOMContentLoaded', () => {
     cart.classList.remove('show');
   });
 
-  // Checkout
+  // Checkout con WhatsApp
   document.getElementById('checkout-btn').addEventListener('click', () => {
     if (cart.length === 0) {
       alert('Tu carrito está vacío');
       return;
     }
-    // Aquí puedes agregar la lógica para procesar la compra
-    alert('¡Gracias por tu compra!');
+
+    // Crear el mensaje para WhatsApp
+    let mensaje = "¡Hola! Quiero realizar la siguiente compra:%0A%0A";
+    let total = 0;
+
+    // Agregar cada item del carrito al mensaje
+    cart.forEach(item => {
+      const itemTotal = item.price * item.quantity;
+      total += itemTotal;
+      mensaje += `▪ ${item.quantity}x ${item.name} (Talle: ${item.size}) - $${itemTotal}%0A`;
+    });
+
+    // Agregar el total al mensaje
+    mensaje += `%0ATotal: $${total}`;
+
+    // Número de WhatsApp (agregar código de país)
+    const numeroWhatsApp = "543765225116"; // Agregué el 54 para Argentina
+
+    // Crear el enlace de WhatsApp con el mensaje
+    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
+
+    // Abrir WhatsApp en una nueva ventana
+    window.open(urlWhatsApp, '_blank');
+
+    // Limpiar el carrito
     cart = [];
     updateCartDisplay();
     document.getElementById('cart').classList.remove('show');
