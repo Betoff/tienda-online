@@ -13,20 +13,20 @@
     </header>
 
     <nav>
-        :::: category-toggle
-        ::: categories
-            <button class="category-filter active" data-category="all">Todo</button>
-            <button class="category-filter" data-category="Pantalones">Pantalones</button>
-            <button class="category-filter" data-category="Remeras">Remeras</button>
-            <button class="category-filter" data-category="Buzos">Buzos</button>
-        :::
-        ::::
+        <div class="category-toggle">
+            <div class="categories">
+                <button class="category-filter active" data-category="all">Todo</button>
+                <button class="category-filter" data-category="Pantalones">Pantalones</button>
+                <button class="category-filter" data-category="Remeras">Remeras</button>
+                <button class="category-filter" data-category="Buzos">Buzos</button>
+            </div>
+        </div>
     </nav>
 
-    :::: container
-    ::: {#products-container .section .product-grid}
-    :::
-    ::::
+    <div class="container">
+        <div id="products-container" class="section product-grid">
+        </div>
+    </div>
 
     <!-- Botón del carrito con contador -->
     <div class="cart-toggle">
@@ -35,18 +35,18 @@
     </div>
 
     <!-- Carrito -->
-    :::: {#cart .cart}
-        ::: cart-header
+    <div id="cart" class="cart">
+        <div class="cart-header">
             <h3>Tu carrito</h3>
             <button class="close-cart">×</button>
-        :::
+        </div>
 
-        ::: {#cart-items .cart-items}
-        :::
+        <div id="cart-items" class="cart-items">
+        </div>
 
-        ::: {#cart-total .cart-total}
-        :::
-    ::::
+        <div id="cart-total" class="cart-total">
+        </div>
+    </div>
 
     <!-- Script de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -54,8 +54,14 @@
     
     <!-- Configuración de Firebase -->
     <script>
-        const firebaseConfig = {
-            // Tu configuración de Firebase aquí
+     const firebaseConfig = {
+  apiKey: "AIzaSyC-bzUQKIzTkurLkudfLtvh8OjOSD8YZ0w",
+  authDomain: "base-de-datos-pagina-f9038.firebaseapp.com",
+  projectId: "base-de-datos-pagina-f9038",
+  storageBucket: "base-de-datos-pagina-f9038.appspot.com",
+  messagingSenderId: "455220883391",
+  appId: "1:455220883391:web:b2ade4281c12e20fb5bb0a",
+  measurementId: "G-4RQ3H9J2L1"
         };
         firebase.initializeApp(firebaseConfig);
     </script>
