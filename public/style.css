@@ -446,3 +446,181 @@ nav {
     margin-top: 1rem;
   }
 }
+.categories {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.category-filter {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #f1f1f1;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.category-filter.active {
+  background: #2c3e50;
+  color: white;
+}
+
+/* Estilos del nuevo botón de compra */
+.button {
+  --width: 150px;
+  --height: 40px;
+  --tooltip-height: 35px;
+  --tooltip-width: 90px;
+  --gap-between-tooltip-to-button: 18px;
+  --button-color: #2c3e50;
+  --tooltip-color: #fff;
+  width: var(--width);
+  height: var(--height);
+  background: var(--button-color);
+  position: relative;
+  text-align: center;
+  border-radius: 0.45em;
+  font-family: "Arial";
+  transition: background 0.3s;
+  cursor: pointer;
+  margin: 1rem auto 0;
+}
+
+.button::before {
+  position: absolute;
+  content: attr(data-tooltip);
+  width: var(--tooltip-width);
+  height: var(--tooltip-height);
+  background-color: #555;
+  font-size: 0.9rem;
+  color: #fff;
+  border-radius: .25em;
+  line-height: var(--tooltip-height);
+  bottom: calc(var(--height) + var(--gap-between-tooltip-to-button) + 10px);
+  left: calc(50% - var(--tooltip-width) / 2);
+}
+
+.button::after {
+  position: absolute;
+  content: '';
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-top-color: #555;
+  left: calc(50% - 10px);
+  bottom: calc(100% + var(--gap-between-tooltip-to-button) - 10px);
+}
+
+.button::after,.button::before {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.5s;
+}
+
+.text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-wrapper,.text,.icon {
+  overflow: hidden;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  color: #fff;
+}
+
+.text {
+  top: 0
+}
+
+.text,.icon {
+  transition: top 0.5s;
+}
+
+.icon {
+  color: #fff;
+  top: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.button:hover {
+  background: #34495e;
+}
+
+.button:hover .text {
+  top: -100%;
+}
+
+.button:hover .icon {
+  top: 0;
+}
+
+.button:hover:before,.button:hover:after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.button:hover:after {
+  bottom: calc(var(--height) + var(--gap-between-tooltip-to-button) - 20px);
+}
+
+.button:hover:before {
+  bottom: calc(var(--height) + var(--gap-between-tooltip-to-button));
+}
+
+/* Actualización del JavaScript para el filtro de categorías */
+document.addEventListener('DOMContentLoaded', () => {
+  // Cargar todos los productos inicialmente
+  loadProducts('all');
+
+  // Agregar event listeners a los botones de categoría
+  const categoryButtons = document.querySelectorAll('.category-filter');
+  categoryButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      // Remover clase active de todos los botones
+      categoryButtons.forEach(btn => btn.classList.remove('active'));
+      // Agregar clase active al botón clickeado
+      button.classList.add('active');
+      // Cargar productos de la categoría seleccionada
+      const category = button.dataset.category;
+      loadProducts(category);
+    });
+  });
+
+  // Modificar la función loadProducts para manejar el filtrado
+  async function loadProducts(category = 'all') {
+    try {
+      let query = db.collection('productos');
+      
+      if (category !== 'all') {
+        query = query.where('categoria', '==', category);
+      }
+      
+      const snapshot = await query.get();
+      const productsContainer = document.getElementById('products-container');
+      
+      if (!snapshot.empty) {
+        productsContainer.innerHTML = '';
+        snapshot.forEach(doc => {
+          // ... resto del código de renderizado ...
+        });
+      } else {
+        productsContainer.innerHTML = '<p class="no-products">No hay productos disponibles en esta categoría.</p>';
+      }
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+    }
+  }
+});
