@@ -202,33 +202,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Botón de checkout
-  const checkoutBtn = document.querySelector('.cart button:last-child');
+  // Botón de checkout - CORREGIDO
+  const checkoutBtn = document.querySelector('.cart > button:last-of-type');
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', function() {
+      console.log('Botón de checkout clickeado'); // Debug log
+      
       if (cart.length === 0) {
         alert('Tu carrito está vacío');
         return;
       }
 
-      let mensaje = "¡Hola! Quiero realizar la siguiente compra:%0A%0A";
-      let total = 0;
+      try {
+        // Crear el mensaje para WhatsApp
+        let mensaje = "¡Hola! Quiero realizar la siguiente compra:%0A%0A";
+        let total = 0;
 
-      cart.forEach(item => {
-        const itemTotal = item.price * item.quantity;
-        total += itemTotal;
-        mensaje += `▪ ${item.quantity}x ${item.name} (Talle: ${item.size}) - $${itemTotal}%0A`;
-      });
+        // Agregar cada item del carrito al mensaje
+        cart.forEach(item => {
+          const itemTotal = item.price * item.quantity;
+          total += itemTotal;
+          mensaje += `▪ ${item.quantity}x ${item.name} (Talle: ${item.size}) - $${itemTotal}%0A`;
+        });
 
-      mensaje += `%0ATotal: $${total}`;
-      const numeroWhatsApp = "543765225116";
-      const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
-      
-      window.open(urlWhatsApp, '_blank');
-      cart = [];
-      updateCartDisplay();
-      cartElement.classList.remove('show');
+        // Agregar el total al mensaje
+        mensaje += `%0ATotal: $${total}`;
+
+        // Número de WhatsApp
+        const numeroWhatsApp = "543765225116";
+
+        // Crear el enlace de WhatsApp con el mensaje
+        const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
+        
+        console.log('URL de WhatsApp:', urlWhatsApp); // Debug log
+
+        // Abrir WhatsApp en una nueva ventana
+        window.open(urlWhatsApp, '_blank');
+
+        // Limpiar el carrito
+        cart = [];
+        updateCartDisplay();
+        cartElement.classList.remove('show');
+        
+        console.log('Compra finalizada exitosamente'); // Debug log
+      } catch (error) {
+        console.error('Error al procesar la compra:', error);
+        alert('Hubo un error al procesar tu compra. Por favor, intenta de nuevo.');
+      }
     });
+  } else {
+    console.error('No se encontró el botón de checkout');
   }
 
   // Filtros de categoría
