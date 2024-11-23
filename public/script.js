@@ -9,7 +9,7 @@ let currentCategory = 'all';
 // Función para cargar productos
 async function loadProducts(category = 'all') {
   try {
-    console.log('Cargando productos...'); // Debug log
+    console.log('Cargando productos...');
     let query = db.collection('productos');
     
     if (category !== 'all') {
@@ -23,60 +23,59 @@ async function loadProducts(category = 'all') {
       productsContainer.innerHTML = '';
       
       if (snapshot.empty) {
-        console.log('No se encontraron productos'); // Debug log
+        console.log('No se encontraron productos');
         productsContainer.innerHTML = '<p>No hay productos disponibles.</p>';
         return;
       }
 
       snapshot.forEach(doc => {
         const product = doc.data();
-        console.log('Producto encontrado:', product); // Debug log
+        console.log('Producto encontrado:', product);
         
-        // Convertir el objeto de talles en un array
         const tallesArray = product.talles ? 
           Object.entries(product.talles).map(([nombre, stock]) => ({
             nombre,
             stock
           })) : [];
         
-const productCard = `
-  <div class="product-card">
-    <div class="image-container">
-      <img src="${product.imagen}" alt="${product.nombre}" loading="lazy">
-    </div>
-    <div class="product-info">
-      <h3>${product.nombre}</h3>
-      <p>$${product.precio}</p>
-      <div class="talles-container">
-        <p>Talles:</p>
-        <div class="talles-grid">
-          ${tallesArray.map(talle => `
-            <div class="talle-option">
-              <label class="talle-label">
-                <input type="radio" 
-                  name="talle-${doc.id}" 
-                  value="${talle.nombre}"
-                  ${talle.stock <= 0 ? 'disabled' : ''}
-                >
-                <span class="talle-text">${talle.nombre}</span>
-                <span class="stock-text">${talle.stock} disponibles</span>
-              </label>
+        const productCard = `
+          <div class="product-card">
+            <div class="image-container">
+              <img src="${product.imagen}" alt="${product.nombre}" loading="lazy">
             </div>
-          `).join('')}
-        </div>
-      </div>
-      <div data-tooltip="Precio: $${product.precio}" class="button">
-        <div class="button-wrapper">
-          <div class="text">Comprar</div>
-          <span class="icon">
-            <svg viewBox="0 0 16 16" class="bi bi-cart2" fill="currentColor" height="16" width="16" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5zM3.14 5l1.25 5h8.22l1.25-5H3.14zM5 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0zm9-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0z"></path>
-            </svg>
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
+            <div class="product-info">
+              <h3>${product.nombre}</h3>
+              <p>$${product.precio}</p>
+              <div class="talles-container">
+                <p>Talles:</p>
+                <div class="talles-grid">
+                  ${tallesArray.map(talle => `
+                    <div class="talle-option">
+                      <label class="talle-label">
+                        <input type="radio" 
+                          name="talle-${doc.id}" 
+                          value="${talle.nombre}"
+                          ${talle.stock <= 0 ? 'disabled' : ''}
+                        >
+                        <span class="talle-text">${talle.nombre}</span>
+                        <span class="stock-text">${talle.stock} disponibles</span>
+                      </label>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              <div data-tooltip="Precio: $${product.precio}" class="button" onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
+                <div class="button-wrapper">
+                  <div class="text">Comprar</div>
+                  <span class="icon">
+                    <svg viewBox="0 0 16 16" class="bi bi-cart2" fill="currentColor" height="16" width="16" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5zM3.14 5l1.25 5h8.22l1.25-5H3.14zM5 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0zm9-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0z"></path>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         `;
         
         productsContainer.innerHTML += productCard;
