@@ -203,11 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Botón de checkout - CORREGIDO
-  const checkoutBtn = document.querySelector('.cart > button:last-of-type');
+  const checkoutBtn = document.querySelector('.cart button:last-child');
   if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', function() {
-      console.log('Botón de checkout clickeado'); // Debug log
-      
+    checkoutBtn.addEventListener('click', () => {
       if (cart.length === 0) {
         alert('Tu carrito está vacío');
         return;
@@ -233,8 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Crear el enlace de WhatsApp con el mensaje
         const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
-        
-        console.log('URL de WhatsApp:', urlWhatsApp); // Debug log
 
         // Abrir WhatsApp en una nueva ventana
         window.open(urlWhatsApp, '_blank');
@@ -243,8 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cart = [];
         updateCartDisplay();
         cartElement.classList.remove('show');
-        
-        console.log('Compra finalizada exitosamente'); // Debug log
       } catch (error) {
         console.error('Error al procesar la compra:', error);
         alert('Hubo un error al procesar tu compra. Por favor, intenta de nuevo.');
@@ -253,6 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     console.error('No se encontró el botón de checkout');
   }
+
 
   // Filtros de categoría
   const categoryButtons = document.querySelectorAll('.category-filter');
