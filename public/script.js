@@ -133,6 +133,7 @@ function addToCart(productId, name, price) {
 function updateCartDisplay() {
   const cartItems = document.getElementById('cart-items');
   const cartCount = document.getElementById('cart-count');
+  const cartTotal = document.querySelector('.cart-total');
   let total = 0;
 
   cartItems.innerHTML = '';
@@ -160,7 +161,7 @@ function updateCartDisplay() {
     `;
   });
 
-  document.querySelector('.cart-total').innerHTML = `
+  cartTotal.innerHTML = `
     <div class="total-amount">Total: $${total}</div>
     <div class="cart-buttons">
       <button class="close-cart-btn">Volver</button>
@@ -172,6 +173,7 @@ function updateCartDisplay() {
   
   // Agregar event listeners a los nuevos botones
   setupCartButtons();
+});
 }
 
 // Función para configurar los event listeners de los botones del carrito
