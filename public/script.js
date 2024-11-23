@@ -64,7 +64,7 @@ async function loadProducts(category = 'all') {
                   `).join('')}
                 </div>
               </div>
-              <div data-tooltip="Precio: $${product.precio}" class="button" onclick="addToCart('${doc.id}', '${product.nombre}', ${product.precio})">
+              <div class="button" data-tooltip="Precio: $${product.precio}" onclick="handleBuyClick('${doc.id}', '${product.nombre}', ${product.precio})">
                 <div class="button-wrapper">
                   <div class="text">Comprar</div>
                   <span class="icon">
@@ -88,6 +88,18 @@ async function loadProducts(category = 'all') {
       productsContainer.innerHTML = '<p>Error al cargar los productos. Por favor, intenta de nuevo más tarde.</p>';
     }
   }
+}
+
+// Nueva función para manejar el click del botón comprar
+function handleBuyClick(productId, name, price) {
+  const selectedSize = document.querySelector(`input[name="talle-${productId}"]:checked`);
+  
+  if (!selectedSize) {
+    alert('Por favor selecciona un talle');
+    return;
+  }
+
+  addToCart(productId, name, price);
 }
 
 // Función para manejar el carrito
@@ -169,39 +181,17 @@ function removeItem(index) {
   updateCartDisplay();
 }
 
-// Busca esta sección en tu script.js y reemplázala
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
   loadProducts();
   
-  // Toggle categorías
-  const categoryBtn = document.getElementById('category-btn');
-  const categoryList = document.getElementById('category-list');
-  
-  if (categoryBtn && categoryList) {
-    categoryBtn.addEventListener('click', () => {
-      categoryList.classList.toggle('show');
-    });
-  }
-
-  // Filtros de categoría
-  document.querySelectorAll('.category-filter').forEach(filter => {
-    filter.addEventListener('click', (e) => {
-      e.preventDefault();
-      const category = e.target.dataset.category;
-      currentCategory = category;
-      loadProducts(category);
-      categoryList.classList.remove('show');
-    });
-  });
-
   // Toggle carrito
-  const cartToggle = document.getElementById('cart-toggle');
+  const cartIcon = document.querySelector('.cart-count').parentElement;
   const cartElement = document.getElementById('cart');
-  const closeCart = document.getElementById('close-cart');
+  const closeCart = document.querySelector('.cart-header');
   
-  if (cartToggle && cartElement) {
-    cartToggle.addEventListener('click', () => {
+  if (cartIcon) {
+    cartIcon.addEventListener('click', () => {
       cartElement.classList.toggle('show');
     });
   }
@@ -212,53 +202,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Checkout con WhatsApp
-  const checkoutBtn = document.getElementById('checkout-btn');
+  // Botón de checkout
+  const checkoutBtn = document.querySelector('.cart button:last-child');
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', function() {
-      console.log('Botón de checkout clickeado'); // Debug log
-      
       if (cart.length === 0) {
         alert('Tu carrito está vacío');
         return;
       }
 
-      try {
-        // Crear el mensaje para WhatsApp
-        let mensaje = "¡Hola! Quiero realizar la siguiente compra:%0A%0A";
-        let total = 0;
+      let mensaje = "¡Hola! Quiero realizar la siguiente compra:%0A%0A";
+      let total = 0;
 
-        // Agregar cada item del carrito al mensaje
-        cart.forEach(item => {
-          const itemTotal = item.price * item.quantity;
-          total += itemTotal;
-          mensaje += `▪ ${item.quantity}x ${item.name} (Talle: ${item.size}) - $${itemTotal}%0A`;
-        });
+      cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        mensaje += `▪ ${item.quantity}x ${item.name} (Talle: ${item.size}) - $${itemTotal}%0A`;
+      });
 
-        // Agregar el total al mensaje
-        mensaje += `%0ATotal: $${total}`;
-
-        // Número de WhatsApp (agregar código de país)
-        const numeroWhatsApp = "543765225116";
-
-        // Crear el enlace de WhatsApp con el mensaje
-        const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
-        
-        console.log('URL de WhatsApp:', urlWhatsApp); // Debug log
-
-        // Abrir WhatsApp en una nueva ventana
-        window.open(urlWhatsApp, '_blank');
-
-        // Limpiar el carrito
-        cart = [];
-        updateCartDisplay();
-        document.getElementById('cart').classList.remove('show');
-        
-        console.log('Compra finalizada exitosamente'); // Debug log
-      } catch (error) {
-        console.error('Error al procesar la compra:', error);
-        alert('Hubo un error al procesar tu compra. Por favor, intenta de nuevo.');
-      }
+      mensaje += `%0ATotal: $${total}`;
+      const numeroWhatsApp = "543765225116";
+      const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensaje}`;
+      
+      window.open(urlWhatsApp, '_blank');
+      cart = [];
+      updateCartDisplay();
+      cartElement.classList.remove('show');
     });
   }
+
+  // Filtros de categoría
+  const categoryButtons = document.querySelectorAll('.category-filter');
+  categoryButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      categoryButtons.forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      const category = button.dataset.category || 'all';
+      loadProducts(category);
+    });
+  });
 });
