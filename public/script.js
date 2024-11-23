@@ -160,50 +160,32 @@ function updateCartDisplay() {
     `;
   });
 
-  document.getElementById('cart-total').textContent = `Total: $${total}`;
+  document.querySelector('.cart-total').innerHTML = `
+    <div class="total-amount">Total: $${total}</div>
+    <div class="cart-buttons">
+      <button class="close-cart-btn">Volver</button>
+      <button class="checkout-btn" ${cart.length === 0 ? 'disabled' : ''}>Finalizar compra</button>
+    </div>
+  `;
+
   cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+  
+  // Agregar event listeners a los nuevos botones
+  setupCartButtons();
 }
 
-// Función para actualizar la cantidad de un item
-function updateQuantity(index, change) {
-  cart[index].quantity += change;
-  
-  if (cart[index].quantity <= 0) {
-    cart.splice(index, 1);
-  }
-  
-  updateCartDisplay();
-}
-
-// Función para remover un item
-function removeItem(index) {
-  cart.splice(index, 1);
-  updateCartDisplay();
-}
-
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-  loadProducts();
-  
-  // Toggle carrito
-  const cartIcon = document.querySelector('.cart-count').parentElement;
+// Función para configurar los event listeners de los botones del carrito
+function setupCartButtons() {
+  const closeCartBtn = document.querySelector('.close-cart-btn');
+  const checkoutBtn = document.querySelector('.checkout-btn');
   const cartElement = document.getElementById('cart');
-  const closeCart = document.querySelector('.cart-header');
-  
-  if (cartIcon) {
-    cartIcon.addEventListener('click', () => {
-      cartElement.classList.toggle('show');
-    });
-  }
-  
-  if (closeCart) {
-    closeCart.addEventListener('click', () => {
+
+  if (closeCartBtn) {
+    closeCartBtn.addEventListener('click', () => {
       cartElement.classList.remove('show');
     });
   }
 
-  // Botón de checkout - CORREGIDO
-  const checkoutBtn = document.querySelector('.cart button:last-child');
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', () => {
       if (cart.length === 0) {
@@ -244,9 +226,32 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Hubo un error al procesar tu compra. Por favor, intenta de nuevo.');
       }
     });
-  } else {
-    console.error('No se encontró el botón de checkout');
   }
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+  loadProducts();
+  
+  // Toggle carrito
+  const cartIcon = document.querySelector('.cart-count').parentElement;
+  const cartElement = document.getElementById('cart');
+  const closeCartHeader = document.querySelector('.cart-header');
+  
+  if (cartIcon) {
+    cartIcon.addEventListener('click', () => {
+      cartElement.classList.toggle('show');
+    });
+  }
+  
+  if (closeCartHeader) {
+    closeCartHeader.addEventListener('click', () => {
+      cartElement.classList.remove('show');
+    });
+  }
+
+  // Configuración inicial de los botones del carrito
+  setupCartButtons();
 
 
   // Filtros de categoría
